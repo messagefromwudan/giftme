@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Confirmă-ți prezența | Deschiderea GiftMe!</title>
+    <meta name="description" content="Te așteptăm luni, 2 noiembrie 2026, la ora 09:30, la deschiderea GiftMe! (CEEF, Cabinetul 223, Chișinău). Confirmă-ți prezența în câteva secunde.">
+    <meta name="theme-color" content="#FDECEC">
+    <meta name="color-scheme" content="light">
+    <link rel="canonical" href="https://giftme.site/confirma-prezenta/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ro_RO">
+    <meta property="og:site_name" content="GiftMe!">
+    <meta property="og:url" content="https://giftme.site/confirma-prezenta/">
+    <meta property="og:title" content="Ne lansăm! Te așteptăm la deschiderea GiftMe! 🎉">
+    <meta property="og:description" content="Luni, 2 noiembrie 2026, ora 09:30 · CEEF, Cabinetul 223, Chișinău. Confirmă-ți prezența aici.">
+    <meta property="og:image" content="https://giftme.site/confirma-prezenta/assets/og-invitatie.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Invitație GiftMe!: Ne lansăm! 2 noiembrie 2026, ora 09:30, CEEF Chișinău">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    <link rel="preload" as="image" href="assets/funda.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="rsvp.css">
+    <script>
+        // Cutia se arată doar la prima vizită și doar dacă animațiile sunt permise.
+        (function (root) {
+            root.classList.add('js');
+            var answered = false;
+            try { answered = !!localStorage.getItem('giftme-rsvp-v1'); } catch (e) {}
+            var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!answered && !calm) root.classList.add('show-intro');
+        })(document.documentElement);
+    </script>
+</head>
+<body>
+    <a class="skip-link" href="#formular">Sari direct la formular</a>
+
+    <!-- Intro: cutia închisă. Ascunsă fără JS, sărită la prefers-reduced-motion. -->
+    <section class="intro" id="intro" aria-label="Invitație GiftMe!">
+        <img class="intro__logo" src="assets/logo-giftme.png" alt="GiftMe!" width="720" height="363">
+        <p class="intro__title marker">
+            <span aria-hidden="true">NE LANS<span class="breve">A</span>M!</span>
+            <span class="visually-hidden">Ne lansăm!</span>
+        </p>
+        <p class="intro__lead">Ai primit o invitație. Deschide cutia!</p>
+
+        <button class="giftbox" id="giftbox" type="button" aria-describedby="giftbox-hint">
+            <span class="visually-hidden">Deschide invitația</span>
+            <svg class="giftbox__sparks" viewBox="0 0 300 200" aria-hidden="true"><path d="M26 70l-18-9 M22 100H2 M26 130l-18 9 M274 70l18-9 M278 100h20 M274 130l18 9"/></svg>
+            <span class="giftbox__body" aria-hidden="true">
+                <svg viewBox="0 0 196 168" preserveAspectRatio="none">
+                    <path class="gb-box" d="M6 6c60 2 122 2 184-1l-3 156c-60 4-118 3-178 1z"/>
+                    <path class="gb-shine" d="M22 28c-1.2 16-1.2 34 0 52 M22 96v10"/>
+                    <path class="gb-ribbon" d="M84 5.6l28-.2-1 158.4-28-.4z"/>
+                </svg>
+                <span class="giftbox__tag marker">pentru tine</span>
+            </span>
+            <span class="giftbox__lid" aria-hidden="true">
+                <svg viewBox="0 0 220 52" preserveAspectRatio="none">
+                    <path class="gb-box" d="M5 9c66-5 142-5 210-1l-1 36c-68 4-140 4-208 1z"/>
+                    <path class="gb-ribbon" d="M96 7.4l28-.4-.4 38.4-28-.2z"/>
+                </svg>
+            </span>
+            <svg class="giftbox__bow" id="giftbox-bow" viewBox="0 0 160 112" aria-hidden="true">
+                <path class="gb-part gb-tail gb-tail--l" d="M75 84c-5 10-12 18-22 25l13 1.6c7-6 12-14 15-23z"/>
+                <path class="gb-part gb-tail gb-tail--r" d="M85 84c5 10 12 18 22 25l-13 1.6c-7-6-12-14-15-23z"/>
+                <g class="gb-loop gb-loop--l">
+                    <path class="gb-part" d="M80 79c-13-31-51-52-64-31-11 19 26 35 64 31z"/>
+                    <path class="gb-crease" d="M68 71c-11-10-26-17-37-16"/>
+                </g>
+                <g class="gb-loop gb-loop--r">
+                    <path class="gb-part" d="M80 79c15-31 53-50 64-29 10 19-28 34-64 29z"/>
+                    <path class="gb-crease" d="M93 71c11-10 26-16 36-14"/>
+                </g>
+                <path class="gb-part gb-knot" d="M80 70.6c6.4-.2 10.8 3.8 10.6 9.6-.2 5.4-4.8 9-10.8 8.8-6-.2-10-4-9.8-9.4.2-5.2 4.2-8.8 10-9z"/>
+            </svg>
+        </button>
+        <p class="intro__hint" id="giftbox-hint">Trage de fundă sau atinge cutia</p>
+    </section>
+
+    <div class="page" id="pagina">
+        <header class="topbar">
+            <a href="../index.html" class="topbar__logo"><img src="assets/logo-giftme.png" alt="GiftMe! – pagina principală" width="720" height="363"></a>
+        </header>
+
+        <main class="layout">
+            <section class="hero" aria-labelledby="titlu">
+                <img class="hero__bow" src="assets/funda.png" alt="" width="240" height="306" aria-hidden="true">
+                <p class="eyebrow">Invitație · marea deschidere</p>
+                <h1 id="titlu" tabindex="-1">
+                    <span class="hero__title marker">Te așteptăm la deschidere!</span>
+                    <span class="hero__subtitle">Confirmă-ți prezența aici <span aria-hidden="true">🎉</span></span>
+                </h1>
+                <p class="hero__lead">Te invităm să fii alături de noi la marea deschidere GiftMe!</p>
+
+                <ul class="details" aria-label="Detaliile evenimentului">
+                    <li>
+                        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 9.5c0-1.4 1-2.4 2.5-2.4h15.2c1.4 0 2.4 1 2.4 2.4v14.2c0 1.4-1 2.4-2.4 2.4H8.4C7 26.1 6 25.1 6 23.7z M6.3 13.2h19.5 M11 4.6v4.6 M21 4.6v4.6"/><path class="accent" d="M13.6 19.4c0-1.3 2.4-2.6 2.4-.3 0-2.3 2.4-1 2.4.3 0 1.6-2.4 3.1-2.4 3.1s-2.4-1.5-2.4-3.1z"/></svg>
+                        <span><strong data-event="dateLabel">Luni, 2 noiembrie 2026</strong></span>
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 5.2c6.1-.2 10.9 4.6 10.8 10.9.1 6-4.8 10.8-10.9 10.7C10 26.9 5.1 22 5.2 16 5.1 10 10 5.1 16 5.2z"/><path class="accent" d="M16 9.6V16l4.2 2.8"/></svg>
+                        <span><strong data-event="timeLabel">ora 09:30</strong></span>
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 28s-8.6-8.3-8.6-14.3C7.4 8.8 11.2 5 16 5s8.6 3.8 8.6 8.7C24.6 19.7 16 28 16 28z"/><circle class="accent" cx="16" cy="13.6" r="3.1"/></svg>
+                        <span>
+                            <strong data-event="place">CEEF, Cabinetul 223</strong>
+                            <span data-event="address">str. Miron Costin 26/2, Chișinău</span>
+                            <a class="details__map" data-event-href="mapUrl" href="https://maps.google.com/?q=Miron+Costin+26%2F2,+Chi%C8%99in%C4%83u" target="_blank" rel="noopener">Vezi pe hartă <span aria-hidden="true">↗</span></a>
+                        </span>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="rsvp" id="formular" aria-labelledby="rsvp-title">
+                <div class="card" id="card">
+                    <!-- Pasul 1: formularul -->
+                    <div class="view view--form" id="view-form">
+                        <h2 class="card__title" id="rsvp-title">Confirmarea ta</h2>
+                        <p class="card__intro">Pentru a ne ajuta cu buna organizare a evenimentului, te rugăm să îți confirmi participarea. Te așteptăm cu surprize și voie bună!</p>
+
+                        <form class="form" id="rsvp-form" novalidate>
+                            <div class="form__fields" id="fields"></div>
+
+                            <!-- Capcană pentru roboți: ascunsă oamenilor și cititoarelor de ecran -->
+                            <div class="hp" aria-hidden="true">
+                                <label for="website">Nu completa acest câmp</label>
+                                <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                            </div>
+
+                            <div class="form__status" id="form-status" role="alert" hidden></div>
+
+                            <button class="btn btn--primary btn--submit" type="submit" id="submit">
+                                <span class="btn__label">Trimite confirmarea</span>
+                                <span class="btn__spinner" aria-hidden="true"></span>
+                            </button>
+                            <p class="form__note">Folosim numele și emailul tău doar pentru acest eveniment: lista de invitați, confirmarea și o reamintire.</p>
+                        </form>
+                        <noscript><p class="form__status">Pentru a trimite confirmarea, activează JavaScript în browser.</p></noscript>
+                    </div>
+
+                    <!-- Pasul 2a: „Da” → biletul de invitat -->
+                    <div class="view view--yes" id="view-yes" hidden tabindex="-1" aria-labelledby="yes-title">
+                        <h2 class="result__title" id="yes-title"><span class="marker">Super!</span> Ne vedem acolo <span aria-hidden="true">🎉</span></h2>
+                        <p class="result__text">Ți-am rezervat un loc. Iată biletul tău de invitat. Fă-i o captură de ecran sau adaugă evenimentul în calendar.</p>
+                        <p class="result__mail" data-mail-note hidden><span aria-hidden="true">✉️</span> Ți-am trimis biletul și pe email, la <strong data-mail-to></strong>. Cu o zi înainte îți trimitem și o reamintire.</p>
+
+                        <article class="ticket" aria-label="Bilet de invitat">
+                            <div class="ticket__main">
+                                <p class="ticket__kicker">Bilet de invitat <span id="ticket-nr"></span></p>
+                                <p class="ticket__name marker" id="ticket-name"></p>
+                                <dl class="ticket__grid">
+                                    <div><dt>Data</dt><dd data-event="dateLabel">Luni, 2 noiembrie 2026</dd></div>
+                                    <div><dt>Ora</dt><dd data-event="timeLabel">ora 09:30</dd></div>
+                                    <div class="ticket__wide"><dt>Locul</dt><dd><span data-event="place">CEEF, Cabinetul 223</span>, <span data-event="address">str. Miron Costin 26/2, Chișinău</span></dd></div>
+                                </dl>
+                            </div>
+                            <div class="ticket__stub" aria-hidden="true">
+                                <svg class="stamp" viewBox="0 0 200 200">
+                                    <defs><path id="stamp-circle" d="M100 100m-72 0a72 72 0 1 1 144 0a72 72 0 1 1-144 0"/></defs>
+                                    <circle cx="100" cy="100" r="94" class="stamp__ring"/>
+                                    <circle cx="100" cy="100" r="54" class="stamp__ring stamp__ring--thin"/>
+                                    <text class="stamp__text"><textPath href="#stamp-circle" textLength="440">IP CEEF · FE GiftMe SRL · GÂNDIT PENTRU TINE! ·</textPath></text>
+                                    <image href="assets/funda.png" x="68" y="58" width="64" height="82"/>
+                                </svg>
+                            </div>
+                        </article>
+
+                        <div class="actions">
+                            <a class="btn btn--primary" href="giftme-lansare.ics" download="GiftMe-deschidere.ics" id="ics-link">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7.5C5 6.6 5.7 6 6.5 6h11c.8 0 1.5.6 1.5 1.5v11c0 .8-.7 1.5-1.5 1.5h-11c-.8 0-1.5-.7-1.5-1.5z M5 10.5h14 M9 4v3.5 M15 4v3.5 M12 13v4.4 M9.8 15.2h4.4"/></svg>
+                                Adaugă în calendar
+                            </a>
+                            <a class="btn btn--ghost" id="gcal-link" href="#" target="_blank" rel="noopener">Google Calendar <span aria-hidden="true">↗</span></a>
+                        </div>
+                        <button class="link-btn" type="button" data-action="change">Te-ai răzgândit? Schimbă răspunsul</button>
+                    </div>
+
+                    <!-- Pasul 2b: „Nu” → mulțumire -->
+                    <div class="view view--no" id="view-no" hidden tabindex="-1" aria-labelledby="no-title">
+                        <img class="result__bow" src="assets/funda.png" alt="" width="240" height="306">
+                        <h2 class="result__title" id="no-title"><span class="marker">Mulțumim</span> că ne-ai anunțat!</h2>
+                        <p class="result__mail" data-mail-note hidden><span aria-hidden="true">✉️</span> Ți-am trimis o confirmare la <strong data-mail-to></strong>.</p>
+                        <p class="result__text">Ne pare rău că nu poți ajunge, dar ne bucurăm mult că ne ești alături. Îți păstrăm un gând bun și o surpriză pentru data viitoare. <span aria-hidden="true">❤️</span></p>
+                        <div class="actions">
+                            <a class="btn btn--ghost" href="../index.html">Descoperă GiftMe!</a>
+                        </div>
+                        <button class="link-btn" type="button" data-action="change">Te-ai răzgândit? Schimbă răspunsul</button>
+                    </div>
+                </div>
+                <!-- Ilustrație provizorie, desenată în SVG. Înlocuiește cu assets/ilustratie.png (vezi README). -->
+                <figure class="illustration">
+                    <svg viewBox="0 0 320 170" aria-hidden="true">
+                        <g class="ink">
+                            <path d="M60 46c9.5-.4 16 6.2 15.8 15.4-.3 9-7 15.3-16 15.2-9-.2-15.3-6.6-15.2-15.6.2-8.8 6.5-14.7 15.4-15z"/>
+                            <path d="M61 77c-.6 14 .3 30 .8 46"/>
+                            <path d="M61.8 123c-6 12-10.6 24-13.8 36 M61.8 123c5 11.6 9 23.4 11.6 35.4"/>
+                            <path d="M60.6 92c-10 3-17.6 8.6-23 16.4 M60.6 90.6c14.8-.6 30.4-4.4 70.4-6.6"/>
+                            <path d="M53.6 60.6c.8.3 1.6.3 2.4 0 M64.6 60.4c.8.3 1.6.3 2.4 0 M55 67c3.6 3.4 8.4 3.4 12-.2"/>
+                            <path d="M262 40c9.6-.2 16.2 6.4 16 15.6-.2 9.2-6.8 15.4-16 15.4-9.2 0-15.4-6.8-15.2-15.8.2-9 6.4-15 15.2-15.2z"/>
+                            <path d="M262 71.2c.8 15.6-.4 32.4-1.4 50"/>
+                            <path d="M260.6 121.2c-5 12.6-8.6 25-10.6 37.4 M260.6 121.2c6.6 11.4 11.6 23.4 15 35.8"/>
+                            <path d="M261.6 86.4c12.2 4.6 20.4 11.6 25.4 21 M261.4 85.4c-14.2.6-29.6-1.6-64.6-2.4"/>
+                            <path d="M255.4 54.6c.8.3 1.6.3 2.4 0 M266.4 54.8c.8.3 1.6.3 2.4 0 M256.6 61.4c3.6 3.4 8.4 3.4 12-.2"/>
+                            <path d="M244 37.4c4.6-8.6 13.6-12.2 23.2-9.4 7.4 2.2 12 7.4 12.6 14.2" />
+                        </g>
+                        <g class="gift">
+                            <path class="gift__box" d="M133 72.6c19.6.6 39.4.6 59.4-.2l-1.2 35.4c-19 1-38 .8-57 .2z"/>
+                            <path class="gift__box" d="M128 60.5c23-1.6 47-1.4 70.6-.4l-.6 12.4c-23.4.8-46.8.6-70 .2z"/>
+                            <path class="gift__ribbon" d="M159 60.8l8.4-.2-.2 47.4-8.6-.2z"/>
+                            <path class="gift__box" d="M163 59.6c-6-9.6-17.6-12.4-18.6-5.2-.8 6 10.2 6.4 18.6 5.2z M163 59.6c6.6-9.4 18-11.6 18.6-4.4.4 6-10.6 6-18.6 4.4z"/>
+                        </g>
+                        <path class="spark" d="M163 22v10 M140 28l5 7 M186 28l-5 7"/>
+                    </svg>
+                    <figcaption class="illustration__caption marker">Cadourile țin amintiri, iar amintirile ne unesc <svg class="caption-heart" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 20.4C6.6 17 1.8 13 1.8 7.6 1.8 4.2 4.4 1.8 7.4 1.8c2.2 0 3.8 1.2 4.6 3.2.9-2 2.6-3.3 4.8-3.3 3 0 5.4 2.5 5.3 5.8-.1 5.4-4.8 9.4-10.1 12.9z"/></svg></figcaption>
+                </figure>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <span class="marker footer__slogan">Gândit pentru tine</span>
+            <span>FE GiftMe! SRL · CEEF, Chișinău</span>
+        </footer>
+    </div>
+
+    <canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
+
+    <script src="rsvp-config.js"></script>
+    <script src="rsvp.js" defer></script>
+</body>
+</html>

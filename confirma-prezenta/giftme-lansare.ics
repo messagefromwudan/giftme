@@ -1,0 +1,21 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//FE GiftMe SRL//Deschidere//RO
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:deschidere-2026-11-02@giftme.site
+DTSTAMP:20261015T000000Z
+DTSTART:20261102T073000Z
+DTEND:20261102T093000Z
+SUMMARY:Deschiderea GiftMe!
+LOCATION:CEEF\, Cabinetul 223\, str. Miron Costin 26/2\, Chișinău
+DESCRIPTION:Te așteptăm cu surprize și voie bună! https://giftme.site
+URL:https://giftme.site/confirma-prezenta/
+BEGIN:VALARM
+TRIGGER:-PT1H
+ACTION:DISPLAY
+DESCRIPTION:Deschiderea GiftMe! începe într-o oră
+END:VALARM
+END:VEVENT
+END:VCALENDAR

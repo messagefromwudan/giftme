@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="despre.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="description" content="Află povestea GiftMe!, firmă de exercițiu a CEEF din Chișinău care creează cadouri cu sens.">
+    <link rel="icon" type="image/png" href="confirma-prezenta/assets/favicon.png">
+    <title>Despre | FE GiftMe!</title>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="index.html"><img src="logo.png" alt="GiftMe! – pagina principală" class="logo-image"></a>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Pagina principală</a>
+            <a href="despre.html" class="active" aria-current="page">Despre</a>
+            <a href="servicii.html">Servicii</a>
+            <a href="contacte.html">Contacte</a>
+        </div>
+    </nav>
+
+    <main class="about-page">
+        <section class="about-hero" aria-labelledby="about-title">
+            <div class="about-hero__content">
+                <p class="about-eyebrow">FE GiftMe! SRL <span>·</span> Despre noi</p>
+                <h1 id="about-title">Cadouri cu sens.<br>Emoții care rămân.</h1>
+                <p class="about-hero__copy">Credem că cele mai frumoase daruri nu sunt despre lucruri, ci despre oamenii care le primesc.</p>
+                <a class="about-hero__link" href="#povestea-noastra">Află povestea noastră <span aria-hidden="true">↓</span></a>
+            </div>
+            <figure class="about-hero__visual" data-reveal>
+                <img src="https://images.unsplash.com/photo-1512909006721-3d6018887383?auto=format&fit=crop&w=1200&q=85" alt="Cadou împachetat cu grijă, pregătit pentru a fi dăruit">
+                <figcaption><span>Un gest ales pentru cineva drag</span><span>01 — GiftMe!</span></figcaption>
+            </figure>
+        </section>
+
+        <section class="about-manifesto" data-reveal aria-label="Ce credem despre cadouri">
+            <p class="about-eyebrow">Un gând simplu, în centrul a tot ce facem</p>
+            <p class="about-manifesto__line">Cel mai frumos cadou este felul în care îl faci pe cineva <em>să se simtă.</em></p>
+        </section>
+
+        <section class="about-story" id="povestea-noastra" aria-labelledby="story-title">
+            <div class="about-story__image" role="img" aria-label="Cadouri atent împachetate pentru o ocazie specială" data-reveal></div>
+            <div class="about-story__content" data-reveal>
+                <p class="about-eyebrow">Mai mult decât un obiect</p>
+                <h2 id="story-title">Fiecare poveste începe cu o persoană.</h2>
+                <p>La GiftMe!, pornim de la omul căruia vrei să-i aduci bucurie. Ce îi place? Ce sărbătoriți? Ce ai vrea să-i transmiți?</p>
+                <p>Răspunsurile ne ajută să găsim un dar care se simte personal, fie că marchează o zi importantă sau spune simplu: „m-am gândit la tine”.</p>
+            </div>
+        </section>
+
+        <section class="about-values" aria-labelledby="values-title">
+            <div class="about-section__heading" data-reveal>
+                <p class="about-eyebrow">De la idee la surpriză</p>
+                <h2 id="values-title">Așa începe un cadou cu sens.</h2>
+            </div>
+            <div class="about-values__grid">
+                <article class="about-value" data-reveal>
+                    <span class="about-value__number">01</span>
+                    <div><h3>Ne spui pentru cine</h3><p>Persoana și ocazia ne dau primul indiciu.</p></div>
+                    <span class="about-value__arrow" aria-hidden="true">↘</span>
+                </article>
+                <article class="about-value" data-reveal>
+                    <span class="about-value__number">02</span>
+                    <div><h3>Găsim ideea potrivită</h3><p>Alegem ceva care se potrivește cu povestea voastră.</p></div>
+                    <span class="about-value__arrow" aria-hidden="true">↘</span>
+                </article>
+                <article class="about-value" data-reveal>
+                    <span class="about-value__number">03</span>
+                    <div><h3>Tu dăruiești bucuria</h3><p>Iar momentul devine al vostru, de ținut minte.</p></div>
+                    <span class="about-value__arrow" aria-hidden="true">✳</span>
+                </article>
+            </div>
+        </section>
+
+        <section class="about-cta" data-reveal aria-labelledby="about-cta-title">
+            <div>
+                <p class="about-eyebrow">Ai deja pe cineva în minte?</p>
+                <h2 id="about-cta-title">Hai să găsim cadoul potrivit.</h2>
+            </div>
+            <a href="contacte.html">Povestește-ne <span aria-hidden="true">↗</span></a>
+        </section>
+    </main>
+
+    <footer class="about-footer" data-reveal>
+        <a href="index.html">FE GiftMe! SRL</a>
+        <span>© 2026 FE GiftMe! SRL. Toate drepturile rezervate.</span>
+        <a href="#">Înapoi sus ↑</a>
+    </footer>
+    <script src="despre.js" defer></script>
+</body>
+</html>

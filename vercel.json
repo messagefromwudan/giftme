@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "trailingSlash": true,
+  "headers": [
+    {
+      "source": "/confirma-prezenta/giftme-lansare.ics",
+      "headers": [{ "key": "Content-Type", "value": "text/calendar; charset=utf-8" }]
+    },
+    {
+      "source": "/confirma-prezenta/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
+    }
+  ]
+}

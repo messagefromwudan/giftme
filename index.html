@@ -1,77 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ro">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GiftMe</title>
-<style>
-  :root {
-    --bg: #fdf6f0;
-    --card: #ffffff;
-    --accent: #e0507a;
-    --accent-dark: #b8395f;
-    --text: #2b2320;
-    --muted: #7a6f68;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 24px;
-  }
-  .card {
-    background: var(--card);
-    border-radius: 20px;
-    padding: 48px 40px;
-    max-width: 440px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
-  }
-  .icon { font-size: 48px; margin-bottom: 8px; }
-  h1 {
-    margin: 0 0 8px;
-    font-size: 2rem;
-    color: var(--accent-dark);
-  }
-  p.tagline {
-    margin: 0 0 32px;
-    color: var(--muted);
-    font-size: 1rem;
-  }
-  button {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 14px 28px;
-    border-radius: 999px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.1s ease;
-  }
-  button:hover { background: var(--accent-dark); }
-  button:active { transform: scale(0.97); }
-  footer {
-    margin-top: 28px;
-    font-size: 0.8rem;
-    color: var(--muted);
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <meta name="description" content="GiftMe! creează cutii cadou personalizate: tu alegi ce pui înăuntru, noi ne ocupăm de restul. Gândit pentru tine.">
+    <link rel="icon" type="image/png" href="confirma-prezenta/assets/favicon.png">
+    <title>GiftMe! — Cutii cadou personalizate | Gândit pentru tine</title>
 </head>
 <body>
-  <div class="card">
-    <div class="icon">🎁</div>
-    <h1>GiftMe</h1>
-    <p class="tagline">Find the perfect gift, every time.</p>
-    <button onclick="alert('More coming soon!')">Get Started</button>
-    <footer>Made with care 💌</footer>
-  </div>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="index.html"><img src="logo.png" alt="GiftMe! – pagina principală" class="logo-image"></a>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="active" aria-current="page">Pagina principală</a>
+            <a href="despre.html">Despre</a>
+            <a href="servicii.html">Servicii</a>
+            <a href="contacte.html">Contacte</a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="gallery-section" aria-labelledby="gallery-title">
+            <h1 id="gallery-title">Găsește cadoul perfect</h1>
+            <div class="accordion-gallery">
+                <a class="ag-panel" href="#">
+                    <img src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=900&q=85" alt="Cadou împachetat cu fundă">
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                    <span class="ag-panel__label">Pentru ea</span>
+                </a>
+                <a class="ag-panel" href="#">
+                    <img src="https://images.unsplash.com/photo-1512909006721-3d6018887383?auto=format&fit=crop&w=900&q=85" alt="Cutie cadou pe o masă">
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                    <span class="ag-panel__label">Pentru el</span>
+                </a>
+                <a class="ag-panel ag-panel--active" href="#" aria-current="true">
+                    <img src="https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=900&q=85" alt="Confetti colorate de ziua de naștere">
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                    <span class="ag-panel__label">Zile de naștere</span>
+                </a>
+                <a class="ag-panel" href="#">
+                    <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=900&q=85" alt="Masă elegantă pregătită pentru o ocazie specială">
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                    <span class="ag-panel__label">Ocazii</span>
+                </a>
+                <a class="ag-panel" href="#">
+                    <img src="https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=85" alt="Set cadou de răsfăț cu flori">
+                    <span class="ag-panel__overlay" aria-hidden="true"></span>
+                    <span class="ag-panel__label">Pentru mine</span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="contact-footer" data-reveal>
+        <a href="index.html">FE GiftMe! SRL</a>
+        <span>© 2026 FE GiftMe! SRL. Toate drepturile rezervate.</span>
+        <a href="#">Înapoi sus ↑</a>
+    </footer>
+    <script src="index.js" defer></script>
 </body>
+
 </html>
