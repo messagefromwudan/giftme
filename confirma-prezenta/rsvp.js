@@ -309,6 +309,8 @@
 
 	function showView(name) {
 		Object.entries(views).forEach(([key, view]) => { view.hidden = key !== name; });
+		// După răspuns rămâne doar cardul (biletul sau mulțumirea), fără invitație deasupra.
+		document.getElementById('pagina').classList.toggle('is-answered', name !== 'form');
 	}
 
 	function showResult(values, { celebrate, focus = true } = {}) {
@@ -325,7 +327,7 @@
 		const view = coming ? views.yes : views.no;
 		if (focus) {
 			view.focus({ preventScroll: true });
-			$('#formular').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+			window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
 		}
 		if (coming && celebrate && !reducedMotion) launchConfetti();
 	}
