@@ -1,6 +1,3 @@
-# Nu se publică pe site
+# Not published with the site
 apps-script/
-dev-server.py
-rsvp-test-local.csv
-logo(old).png
 .DS_Store

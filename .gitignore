@@ -1,5 +1,28 @@
-.DS_Store
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# next.js / build
+/.next/
+/out/
+/build
+/coverage
+/test-results/
+/playwright-report/
+*.tsbuildinfo
+next-env.d.ts
+
+# env files (secrets live in Vercel, never in git)
+.env*
+!.env.example
+
+# vercel
 .vercel
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
 __pycache__/
 rsvp-test-local.csv
-.env*
