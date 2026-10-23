@@ -34,6 +34,10 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   trailingSlash: true,
   poweredByHeader: false,
+  experimental: {
+    // The build cache served stale Tailwind CSS after edits to globals.css; builds are fast without it.
+    turbopackFileSystemCacheForBuild: false,
+  },
   turbopack: {
     rules: {
       "*.css": {
