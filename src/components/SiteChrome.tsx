@@ -4,6 +4,7 @@ import type { Locale } from "@/lib/catalog";
 import { SITE } from "@/lib/catalog";
 import { getDict, href } from "@/i18n";
 import { CartLink } from "./shop/CartBits";
+import { MobileMenu } from "./MobileMenu";
 
 /** Launch banner; remove after 2 Nov 2026. */
 export function AnnounceBar({ lang }: { lang: Locale }) {
@@ -68,26 +69,7 @@ export function SiteHeader({ lang, altHref }: { lang: Locale; altHref: string })
             <span className="sr-only"> – {t.switchTo}</span>
           </Link>
 
-          <details className="group relative lg:hidden">
-            <summary className="flex h-10 cursor-pointer list-none items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white [&::-webkit-details-marker]:hidden">
-              <span className="group-open:hidden">{t.menu}</span>
-              <span className="hidden group-open:inline">{t.close}</span>
-            </summary>
-            <nav
-              aria-label={lang === "ro" ? "Principal" : "Main"}
-              className="absolute right-0 top-12 w-60 rounded-2xl bg-white p-2 shadow-xl ring-1 ring-black/10"
-            >
-              <ul>
-                {links.map((l) => (
-                  <li key={l.href}>
-                    <a href={l.href} className="block rounded-xl px-4 py-3 font-medium hover:bg-blush">
-                      {l.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </details>
+          <MobileMenu links={links} navLabel={lang === "ro" ? "Principal" : "Main"} openLabel={t.menu} closeLabel={t.close} />
         </div>
       </div>
     </header>
