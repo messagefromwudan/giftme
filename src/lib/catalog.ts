@@ -55,11 +55,12 @@ export const SITE = {
   phoneDisplay: "068 951 000",
   phoneIntl: "+37368951000",
   currency: "MDL",
-  social: {
-    instagram: "https://www.instagram.com/giftme.md/",
-    tiktok: "https://www.tiktok.com/@fe.giftme.md",
-    facebook: "https://www.facebook.com/FE.giftme.SRL.md",
-  },
+  /** Shown as icon + @handle only; platform names never appear in the copy. */
+  social: [
+    { id: "instagram", handle: "@giftme.md", url: "https://www.instagram.com/giftme.md/" },
+    { id: "tiktok", handle: "@fe.giftme.md", url: "https://www.tiktok.com/@fe.giftme.md" },
+    { id: "facebook", handle: "@FE.giftme.SRL.md", url: "https://www.facebook.com/FE.giftme.SRL.md" },
+  ],
 } as const;
 
 /** Included in every box, GM-01…GM-09. */
@@ -318,9 +319,17 @@ export const RULES = {
     deliversOutsideChisinau: true,
   },
   custom: {
-    /** GM-09 surprise delivery outside Chișinău is not offered until the director sets a price. */
+    /** GM-09 surprise delivery (with confetti) is Chișinău only. */
     deliversOutsideChisinau: false,
+    /** No handling fee on top of the human-quoted gift price. */
+    handlingFee: 0,
+    /** Gifts quoted above this need written approval from the coordinator. */
+    maxGiftValueWithoutApproval: 5000,
   },
+  /** Every order is a practice-company order: no real payment or delivery. */
+  simulatedOrders: true,
+  /** Messages and delivery data are deleted this many days after the PASS-IT-ON code is revealed. */
+  dataRetentionDaysAfterReveal: 30,
   /** Sanity cap per order; larger team/class orders are handled by email. */
   maxBoxesPerOrder: 100,
 } as const;

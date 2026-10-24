@@ -24,7 +24,7 @@ export function organizationLd(lang: Locale) {
     email: SITE.email,
     telephone: SITE.phoneIntl,
     address: { "@type": "PostalAddress", addressLocality: "Chișinău", addressCountry: "MD" },
-    sameAs: Object.values(SITE.social),
+    sameAs: SITE.social.map((s) => s.url),
   };
 }
 

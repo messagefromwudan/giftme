@@ -5,6 +5,7 @@ import { BOXES, EVERY_BOX_INCLUDES, OFFER_NOTES, OFFERS, SITE } from "@/lib/cata
 import { getDict, hasLocale } from "@/i18n";
 import { BoxCard } from "@/components/BoxCard";
 import { PageShell } from "@/components/PageShell";
+import { SocialIcon } from "@/components/SocialIcon";
 import { JsonLd, organizationLd } from "@/lib/jsonld";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]">): Promise<Metadata> {
@@ -197,17 +198,21 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
             </li>
             <li className="rounded-3xl border border-white/15 p-6">
               <span className="text-sm text-muted-dark">{t.contact.social}</span>
-              <span className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-lg font-semibold">
-                <a href={SITE.social.instagram} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                  Instagram
-                </a>
-                <a href={SITE.social.tiktok} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                  TikTok
-                </a>
-                <a href={SITE.social.facebook} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                  Facebook
-                </a>
-              </span>
+              <ul className="mt-2 space-y-2">
+                {SITE.social.map((s) => (
+                  <li key={s.id}>
+                    <a
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 font-semibold hover:underline"
+                    >
+                      <SocialIcon id={s.id} />
+                      {s.handle}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </li>
           </ul>
         </div>

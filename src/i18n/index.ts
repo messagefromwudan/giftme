@@ -63,7 +63,7 @@ const ro = {
     customHowTitle: "Cum funcționează YOUR BOX",
     customHow: [
       "Ne spui ce cadou visezi să dăruiești (ex. un telefon, o cheie de mașină, o bijuterie).",
-      "Echipa noastră îți trimite prețul cadoului plus taxa de procesare.",
+      "Echipa noastră îți trimite prețul cadoului, fără alte taxe.",
       "Plătești cotația, abia apoi cumpărăm cadoul.",
       "Îl ambalăm în cutia gravată și îl livrăm surpriză în Chișinău.",
     ],
@@ -201,7 +201,7 @@ const en: Dict = {
     customHowTitle: "How YOUR BOX works",
     customHow: [
       "Tell us the gift you dream of giving (e.g. a phone, a car key, jewelry).",
-      "Our team sends you the gift price plus a handling fee.",
+      "Our team sends you the gift price, with no extra fees.",
       "You pay the quote; only then do we buy the gift.",
       "We wrap it in the engraved box and deliver it as a surprise in Chișinău.",
     ],
