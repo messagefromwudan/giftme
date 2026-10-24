@@ -4,9 +4,11 @@ import type { NextConfig } from "next";
 // fonts.googleapis.com / gstatic: the RSVP page loads its own Google Fonts.
 // Supabase: browsers upload QR messages and play them through short-lived signed URLs.
 const supabase = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).origin : "";
+// Vercel's comment toolbar is injected on preview deployments only.
+const previewToolbar = process.env.VERCEL_ENV === "preview" ? "https://vercel.live" : "";
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
+  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com ${previewToolbar}`.trim(),
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob:",

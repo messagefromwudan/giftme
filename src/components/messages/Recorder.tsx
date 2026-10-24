@@ -114,17 +114,21 @@ export function Recorder({ lang }: { lang: Locale }) {
   }
 
   async function uploadBlob(file: Blob) {
+    if (file.size === 0) return showError("EMPTY");
     if (file.size > MAX_BYTES) return showError("TOO_LARGE");
     setBusy(true);
     setError("");
     try {
       const up = await api({ action: "upload", ...auth, mimeType: file.type, size: file.size });
-      const put = await fetch(up.uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": up.contentType, "x-upsert": "false", "Cache-Control": "max-age=3600" },
-        body: file,
-      });
-      if (!put.ok) throw new Error("UPLOAD_MISSING");
+      const put = () =>
+        fetch(up.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": up.contentType, "x-upsert": "false", "Cache-Control": "max-age=3600" },
+          body: file,
+        });
+      // One retry on a dropped connection (mobile networks); never on an HTTP error.
+      const res = await put().catch(() => put());
+      if (!res.ok) throw new Error("UPLOAD_MISSING");
       const r = await api({ action: "commit", ...auth, messageId: up.messageId });
       setCurrent(r.message);
       reset();
