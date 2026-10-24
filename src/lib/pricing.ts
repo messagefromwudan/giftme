@@ -11,6 +11,8 @@ export type QuoteInput = {
   zone: Zone;
   /** A discount code that the caller has ALREADY validated against the database. */
   code?: { type: "PASS_IT_ON" | "REFERRAL"; code: string };
+  /** The buyer has an unused REFER A FRIEND credit (−50 MDL) earned by referring someone. */
+  referralCredit?: boolean;
   /** Defaults to now; injectable for tests. */
   now?: Date;
 };
@@ -31,14 +33,16 @@ export type Quote = {
   boxCount: number;
   subtotal: number;
   offer: { id: OfferId; name: string; discount: number } | null;
-  /** True when the caller's code gave the best discount and will be consumed on order. */
-  codeApplied: boolean;
+  /** What the winning offer came from: "code" and "credit" are consumed when the order is placed. */
+  offerSource: OfferSource | null;
   discountedSubtotal: number;
   delivery: { fee: number; reason: DeliveryReason };
   total: number;
   /** True when the order contains GM-09: total excludes the gift, which a human quotes later. */
   customGiftPending: boolean;
 };
+
+export type OfferSource = "quantity" | "code" | "credit";
 
 export type DeliveryReason =
   | "free_over_threshold_chisinau"
@@ -144,19 +148,20 @@ export function quote(input: QuoteInput): Quote {
   const subtotal = lines.reduce((s, l) => s + l.lineTotal, 0);
 
   // Offers never stack: compute every applicable one and keep the best.
-  // On a tie, prefer the quantity offer so the customer's code is not used up.
+  // On a tie, the earlier candidate wins: quantity offers first, so codes and credits are not used up.
   let offer: Quote["offer"] = null;
-  let codeApplied = false;
+  let offerSource: OfferSource | null = null;
   if (offersActive(now)) {
-    const candidates: { id: OfferId; fromCode: boolean }[] = [];
+    const candidates: { id: OfferId; source: OfferSource }[] = [];
     const q = quantityOffer(boxCount);
-    if (q) candidates.push({ id: q, fromCode: false });
-    if (input.code) candidates.push({ id: input.code.type, fromCode: true });
+    if (q) candidates.push({ id: q, source: "quantity" });
+    if (input.code) candidates.push({ id: input.code.type, source: "code" });
+    if (input.referralCredit) candidates.push({ id: "REFERRAL", source: "credit" });
     for (const c of candidates) {
       const discount = discountFor(c.id, subtotal);
       if (discount > 0 && (!offer || discount > offer.discount)) {
         offer = { id: c.id, name: offerById(c.id).name, discount };
-        codeApplied = c.fromCode;
+        offerSource = c.source;
       }
     }
   }
@@ -181,7 +186,7 @@ export function quote(input: QuoteInput): Quote {
     boxCount,
     subtotal,
     offer,
-    codeApplied,
+    offerSource,
     discountedSubtotal,
     delivery,
     total: discountedSubtotal + delivery.fee,

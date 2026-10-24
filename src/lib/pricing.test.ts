@@ -43,11 +43,11 @@ describe("quote", () => {
     // 3 boxes: TRIO 15% vs PASS-IT-ON 15% → tie keeps TRIO and does not burn the code.
     const tie = q([["GM-01", 3]], { code: { type: "PASS_IT_ON", code: "X" } });
     expect(tie.offer?.id).toBe("TRIO");
-    expect(tie.codeApplied).toBe(false);
+    expect(tie.offerSource).toBe("quantity");
     // 1 box: PASS-IT-ON 15% (68) beats nothing.
     const one = q([["GM-05", 1]], { code: { type: "PASS_IT_ON", code: "X" } });
     expect(one.offer).toMatchObject({ id: "PASS_IT_ON", discount: 68 });
-    expect(one.codeApplied).toBe(true);
+    expect(one.offerSource).toBe("code");
     // 2 cheap boxes: DUO 10% of 880 = 88 beats REFERRAL 50.
     const duo = q([["GM-01", 2]], { code: { type: "REFERRAL", code: "X" } });
     expect(duo.offer?.id).toBe("DUO");
@@ -56,6 +56,20 @@ describe("quote", () => {
       id: "REFERRAL",
       discount: 50,
     });
+  });
+
+  it("referral credit is one more non-stacking candidate", () => {
+    const r = q([["GM-01", 1]], { referralCredit: true });
+    expect(r.offer).toMatchObject({ id: "REFERRAL", discount: 50 });
+    expect(r.offerSource).toBe("credit");
+    // With 3 boxes TRIO wins and the credit stays unused.
+    expect(q([["GM-01", 3]], { referralCredit: true }).offerSource).toBe("quantity");
+  });
+
+  it("GM-09 quantity offers discount only the 360 MDL fee", () => {
+    const r = q([["GM-09", 2]]);
+    expect(r.offer).toMatchObject({ id: "DUO", discount: 72 });
+    expect(r.customGiftPending).toBe(true);
   });
 
   it("outside Chișinău: 60 MDL, never free", () => {

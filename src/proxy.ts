@@ -9,6 +9,15 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const url = request.nextUrl.clone();
 
+  // The static RSVP page is served as-is (its folder URL is rewritten in next.config.ts).
+  if (pathname.startsWith("/confirma-prezenta/")) return NextResponse.next();
+
+  // Canonical page URLs end with "/" (trailingSlash). APIs are excluded by the matcher.
+  // (A plain URL: NextURL would normalise the slash away again.)
+  if (!pathname.endsWith("/")) {
+    return NextResponse.redirect(new URL(`${pathname}/${request.nextUrl.search}`, request.url), 308);
+  }
+
   // Box pages are partially prerendered, so an unknown slug would stream a 404 page with
   // status 200. Send unknown slugs to the catch-all instead, which returns a real 404.
   const box = pathname.match(/^\/(?:(ro|en)\/)?cutii\/([^/]+)\/?$/);
@@ -24,7 +33,7 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Skip Next internals, APIs, the MCP endpoint, .well-known, the static RSVP page
-  // and any path with a file extension (catalog.json, llms.txt, images…).
-  matcher: ["/((?!_next|_vercel|api|mcp|\\.well-known|confirma-prezenta|.*\\..*).*)"],
+  // Skip Next internals, APIs, the MCP endpoint, .well-known and any path with a file
+  // extension (catalog.json, llms.txt, images, the RSVP page's files…).
+  matcher: ["/((?!_next|_vercel|api|mcp|\\.well-known|.*\\..*).*)"],
 };

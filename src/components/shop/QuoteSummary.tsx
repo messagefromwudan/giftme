@@ -1,0 +1,71 @@
+"use client";
+
+import type { Locale } from "@/lib/catalog";
+import type { Quote } from "@/lib/pricing";
+import { getDict } from "@/i18n";
+
+export function QuoteSummary({
+  lang,
+  quote,
+  loading,
+  showFreeHint = true,
+}: {
+  lang: Locale;
+  quote: Quote | null;
+  loading?: boolean;
+  showFreeHint?: boolean;
+}) {
+  const t = getDict(lang).shop;
+  if (!quote) return <p className="text-sm text-muted">{loading ? t.loading : ""}</p>;
+  const missing = 800 - quote.discountedSubtotal;
+  const deliveryText =
+    quote.delivery.reason === "included_in_custom_box"
+      ? t.deliveryIncluded
+      : quote.delivery.fee === 0
+        ? t.deliveryFree
+        : `${quote.delivery.fee} MDL`;
+
+  return (
+    <div aria-live="polite" aria-busy={loading} className={loading ? "opacity-60 transition" : "transition"}>
+      <dl className="space-y-2 text-[0.95rem]">
+        {quote.lines.map((l) => (
+          <div key={l.boxId} className="flex justify-between gap-4">
+            <dt>
+              {l.quantity} × {l.name}
+            </dt>
+            <dd className="whitespace-nowrap">{l.lineTotal} MDL</dd>
+          </div>
+        ))}
+        <div className="flex justify-between gap-4 border-t border-black/10 pt-2">
+          <dt>{t.subtotal}</dt>
+          <dd>{quote.subtotal} MDL</dd>
+        </div>
+        {quote.offer && (
+          <div className="flex justify-between gap-4 text-red-dark">
+            <dt>
+              {t.discount} {quote.offer.name}
+            </dt>
+            <dd className="whitespace-nowrap">−{quote.offer.discount} MDL</dd>
+          </div>
+        )}
+        <div className="flex justify-between gap-4">
+          <dt>{t.delivery}</dt>
+          <dd>{deliveryText}</dd>
+        </div>
+        <div className="flex justify-between gap-4 border-t border-black/10 pt-2 font-display text-xl font-black">
+          <dt>{t.total}</dt>
+          <dd>{quote.total} MDL</dd>
+        </div>
+      </dl>
+      {quote.customGiftPending && <p className="mt-2 text-sm text-muted">{t.giftPending}</p>}
+      {quote.offer && (
+        <p className="mt-3 rounded-xl bg-blush px-3 py-2 text-sm">
+          {t.bestOffer} <strong>{quote.offer.name}</strong>
+        </p>
+      )}
+      {showFreeHint && quote.delivery.fee > 0 && missing > 0 && missing < 400 && (
+        <p className="mt-2 text-sm text-muted">{t.freeDeliveryHint(missing)}</p>
+      )}
+    </div>
+  );
+}

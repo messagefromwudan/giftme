@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BOXES, EVERY_BOX_INCLUDES, SITE, getBox } from "@/lib/catalog";
+import { BOXES, EVERY_BOX_INCLUDES, getBox } from "@/lib/catalog";
 import { getDict, hasLocale, href, LOCALES } from "@/i18n";
 import { BoxArt } from "@/components/BoxArt";
 import { PageShell } from "@/components/PageShell";
 import { formatMDL } from "@/components/SiteChrome";
 import { JsonLd, productLd } from "@/lib/jsonld";
+import { AddToCart } from "@/components/shop/CartBits";
+import { PracticeNotice } from "@/components/shop/PracticeNotice";
 
 export function generateStaticParams() {
   return LOCALES.flatMap((lang) => BOXES.map((b) => ({ lang, id: b.slug })));
@@ -108,20 +110,9 @@ export default async function BoxPage({ params }: PageProps<"/[lang]/cutii/[id]"
               ))}
             </ul>
 
-            <div className="mt-10 rounded-3xl bg-ink p-6 text-white">
-              <h2 className="text-2xl">{t.boxes.orderSoonTitle}</h2>
-              <p className="mt-2 text-muted-dark">{t.boxes.orderSoonText}</p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <a
-                  className="btn btn-primary"
-                  href={`mailto:${SITE.email}?subject=${encodeURIComponent(`${box.id} ${box.name}`)}`}
-                >
-                  {SITE.email}
-                </a>
-                <a className="btn btn-ghost-dark" href={`tel:${SITE.phoneIntl}`}>
-                  {SITE.phoneDisplay}
-                </a>
-              </div>
+            <div className="mt-10 space-y-4">
+              <AddToCart boxId={box.id} lang={lang} />
+              <PracticeNotice lang={lang} compact />
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Locale } from "@/lib/catalog";
 import { SITE } from "@/lib/catalog";
 import { getDict, href } from "@/i18n";
+import { CartLink } from "./shop/CartBits";
 
 /** Launch banner; remove after 2 Nov 2026. */
 export function AnnounceBar({ lang }: { lang: Locale }) {
@@ -55,6 +56,7 @@ export function SiteHeader({ lang, altHref }: { lang: Locale; altHref: string })
         </nav>
 
         <div className="flex items-center gap-2">
+          <CartLink lang={lang} />
           <Link
             href={altHref}
             hrefLang={otherLang}

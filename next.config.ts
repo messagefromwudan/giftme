@@ -33,6 +33,9 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   trailingSlash: true,
+  // Pages get their trailing-slash redirect in src/proxy.ts. APIs must answer at the exact path:
+  // many HTTP clients used by AI agents don't follow a 308 on POST.
+  skipTrailingSlashRedirect: true,
   poweredByHeader: false,
   experimental: {
     // The build cache served stale Tailwind CSS after edits to globals.css; builds are fast without it.
