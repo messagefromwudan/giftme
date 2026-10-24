@@ -45,9 +45,10 @@ export interface Db {
   /** Newest first. */
   messagesForOrder(orderId: string): Promise<Message[]>;
   deleteMessage(id: string): Promise<void>;
-  /** Messages whose retention ended (30 days after the PASS-IT-ON reveal), plus every never-revealed
-   *  message when `includeUnrevealed` (from RULES.unrevealedMessagesDeleteOn). */
-  expiredMessages(now: Date, includeUnrevealed: boolean): Promise<Message[]>;
+  /** Messages whose retention ended (30 days after the PASS-IT-ON reveal). */
+  expiredMessages(now: Date): Promise<Message[]>;
+  /** Messages whose PASS-IT-ON code was never revealed (deleted from RULES.unrevealedMessagesDeleteOn). */
+  unrevealedMessages(): Promise<Message[]>;
 
   /** Cheap query that counts as activity (keeps a free Supabase project from pausing). */
   ping(): Promise<void>;
@@ -336,15 +337,18 @@ export class SupabaseDb implements Db {
     check("delete message", await this.sb.from("messages").delete().eq("id", id));
   }
 
-  async expiredMessages(now: Date, includeUnrevealed: boolean) {
-    const expired = `delete_after.lt."${now.toISOString()}"`;
+  async expiredMessages(now: Date) {
     const data = check(
       "expired messages",
-      await this.sb
-        .from("messages")
-        .select("*")
-        .or(includeUnrevealed ? `${expired},revealed_at.is.null` : expired)
-        .limit(200),
+      await this.sb.from("messages").select("*").lt("delete_after", now.toISOString()).limit(200),
+    );
+    return (data ?? []).map((r) => fromMessageRow(r as MessageRow));
+  }
+
+  async unrevealedMessages() {
+    const data = check(
+      "unrevealed messages",
+      await this.sb.from("messages").select("*").is("revealed_at", null).limit(200),
     );
     return (data ?? []).map((r) => fromMessageRow(r as MessageRow));
   }
@@ -497,10 +501,11 @@ export class MemoryDb implements Db {
   async deleteMessage(id: string) {
     this.messages.delete(id);
   }
-  async expiredMessages(now: Date, includeUnrevealed: boolean) {
-    return [...this.messages.values()]
-      .filter((m) => (m.deleteAfter && new Date(m.deleteAfter) < now) || (includeUnrevealed && !m.revealedAt))
-      .map((m) => structuredClone(m));
+  async expiredMessages(now: Date) {
+    return [...this.messages.values()].filter((m) => m.deleteAfter && new Date(m.deleteAfter) < now).map((m) => structuredClone(m));
+  }
+  async unrevealedMessages() {
+    return [...this.messages.values()].filter((m) => !m.revealedAt).map((m) => structuredClone(m));
   }
   async ping() {}
   async cleanup() {

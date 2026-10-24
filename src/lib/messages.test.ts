@@ -4,6 +4,7 @@ import { createOrder, deliveryDateBounds } from "./orders";
 import { checkCode } from "./codes";
 import {
   deleteExpiredMessages,
+  deleteUnrevealedMessages,
   messageForRecipient,
   orderForMessages,
   revealPassCode,
@@ -55,11 +56,14 @@ describe("QR messages", () => {
     expect(await messageForRecipient(m.id)).toBeNull();
   });
 
-  it("a message whose code is never revealed is deleted on 27 June 2027 (Chișinău time)", async () => {
+  it("a message whose code is never revealed is deleted only from 27 June 2027 (Chișinău time)", async () => {
     const m = await saveTextMessage(await order(), "Pentru tine");
-    await deleteExpiredMessages(new Date("2027-06-26T20:59:00Z")); // 23:59 on 26 June in Chișinău
+    // The 30-day step never touches unrevealed messages, however late it runs.
+    expect(await deleteExpiredMessages(new Date("2030-01-01T00:00:00Z"))).toBe(0);
+    expect(await deleteUnrevealedMessages(new Date())).toBe(0);
+    expect(await deleteUnrevealedMessages(new Date("2027-06-26T20:59:59Z"))).toBe(0); // 23:59:59 on 26 June
     expect(await messageForRecipient(m.id)).not.toBeNull();
-    await deleteExpiredMessages(new Date("2027-06-26T21:00:00Z")); // 00:00 on 27 June in Chișinău
+    expect(await deleteUnrevealedMessages(new Date("2027-06-26T21:00:00Z"))).toBe(1); // 00:00 on 27 June
     expect(await messageForRecipient(m.id)).toBeNull();
   });
 

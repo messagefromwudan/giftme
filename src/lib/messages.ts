@@ -162,13 +162,22 @@ export async function revealPassCode(id: string) {
   return { code: rec.code, expiresAt: rec.expiresAt };
 }
 
-/** Daily cron: delete messages (and files) whose retention period is over: 30 days after the
- *  reveal, or, for codes never revealed, from RULES.unrevealedMessagesDeleteOn. */
+async function deleteMessages(list: Message[]) {
+  await db().media.remove(list.flatMap((m) => (m.storagePath ? [m.storagePath] : [])));
+  for (const m of list) await db().deleteMessage(m.id);
+  return list.length;
+}
+
+/** Daily cron: delete messages (and files) 30 days after the PASS-IT-ON reveal. */
 export async function deleteExpiredMessages(now = new Date()) {
-  const expired = await db().expiredMessages(now, chisinauDate(now) >= RULES.unrevealedMessagesDeleteOn);
-  await db().media.remove(expired.flatMap((m) => (m.storagePath ? [m.storagePath] : [])));
-  for (const m of expired) await db().deleteMessage(m.id);
-  return expired.length;
+  return deleteMessages(await db().expiredMessages(now));
+}
+
+/** Daily cron, separate step: messages whose code was never revealed, only on or after
+ *  RULES.unrevealedMessagesDeleteOn (Chișinău date). Before that date it touches nothing. */
+export async function deleteUnrevealedMessages(now = new Date()) {
+  if (chisinauDate(now) < RULES.unrevealedMessagesDeleteOn) return 0;
+  return deleteMessages(await db().unrevealedMessages());
 }
 
 export async function qrSvg(url: string) {
