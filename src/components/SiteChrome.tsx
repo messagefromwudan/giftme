@@ -29,6 +29,7 @@ export function SiteHeader({ lang, altHref }: { lang: Locale; altHref: string })
   const home = href(lang);
   const links = [
     { href: `${home}#cutii`, label: t.boxes },
+    { href: href(lang, "/harta-emotiei/"), label: getDict(lang).harta.nav },
     { href: `${home}#cum-functioneaza`, label: t.how },
     { href: `${home}#oferte`, label: t.offers },
     { href: `${home}#intrebari`, label: t.faq },
@@ -43,7 +44,7 @@ export function SiteHeader({ lang, altHref }: { lang: Locale; altHref: string })
           <Image src="/img/logo-giftme.png" alt="" width={720} height={363} priority className="h-9 w-auto" sizes="80px" />
         </Link>
 
-        <nav aria-label={lang === "ro" ? "Principal" : "Main"} className="hidden md:block">
+        <nav aria-label={lang === "ro" ? "Principal" : "Main"} className="hidden lg:block">
           <ul className="flex items-center gap-6 text-[0.95rem] font-medium">
             {links.map((l) => (
               <li key={l.href}>
@@ -67,7 +68,7 @@ export function SiteHeader({ lang, altHref }: { lang: Locale; altHref: string })
             <span className="sr-only"> – {t.switchTo}</span>
           </Link>
 
-          <details className="group relative md:hidden">
+          <details className="group relative lg:hidden">
             <summary className="flex h-10 cursor-pointer list-none items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white [&::-webkit-details-marker]:hidden">
               <span className="group-open:hidden">{t.menu}</span>
               <span className="hidden group-open:inline">{t.close}</span>

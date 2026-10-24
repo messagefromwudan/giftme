@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { BOXES, EVERY_BOX_INCLUDES, OFFER_NOTES, OFFERS, SITE } from "@/lib/catalog";
-import { getDict, hasLocale } from "@/i18n";
+import { getDict, hasLocale, href } from "@/i18n";
+import Link from "next/link";
 import { BoxCard } from "@/components/BoxCard";
 import { PageShell } from "@/components/PageShell";
 import { SocialIcon } from "@/components/SocialIcon";
@@ -40,9 +41,9 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
               <a href="#cutii" className="btn btn-primary">
                 {t.hero.ctaPrimary} <span aria-hidden="true">↓</span>
               </a>
-              <a href="#cum-functioneaza" className="btn btn-ghost-dark">
-                {t.hero.ctaSecondary}
-              </a>
+              <Link href={href(lang, "/harta-emotiei/")} className="btn btn-ghost-dark">
+                {t.harta.heroCta} ✨
+              </Link>
             </div>
           </div>
           <div className="order-first flex justify-center md:order-none" aria-hidden="true">
