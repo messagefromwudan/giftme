@@ -53,7 +53,8 @@ Vercel reads variables at deploy time, so every change needs a redeploy (about 1
 
 - Close: Vercel → Settings → Environment Variables → `CHECKOUT_OPEN` (Production) → Edit → `false` → Save,
   then Deployments → latest Production → ⋯ → Redeploy. Or in a terminal:
-  `vercel env rm CHECKOUT_OPEN production -y && echo false | vercel env add CHECKOUT_OPEN production && vercel redeploy https://www.giftme.site --target production`
+  `printf false | vercel env update CHECKOUT_OPEN production -y && vercel redeploy https://www.giftme.site`
+  (tested on Preview 24 Oct: about 70 s from the command to the closed site)
 - Open again: the same with `true`.
 - Check: https://www.giftme.site/api/agent/order answers 403 CHECKOUT_CLOSED when closed;
   /llms.txt says "Ordering is open" or "closed at the moment".
