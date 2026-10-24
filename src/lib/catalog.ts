@@ -301,6 +301,15 @@ export const BOXES: Box[] = [
 
 export const CUSTOM_BOX_ID: BoxId = "GM-09";
 
+/** A YYYY-MM-DD rule date in words: "27 iunie 2027" / "27 June 2027". */
+export const ruleDate = (iso: string, lang: Locale) =>
+  new Intl.DateTimeFormat(lang === "ro" ? "ro-RO" : "en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${iso}T00:00:00Z`));
+
 export function getBox(id: string): Box | undefined {
   const norm = id.trim().toUpperCase();
   return BOXES.find((b) => b.id === norm || b.slug.toUpperCase() === norm);
@@ -330,6 +339,8 @@ export const RULES = {
   simulatedOrders: true,
   /** Messages and delivery data are deleted this many days after the PASS-IT-ON code is revealed. */
   dataRetentionDaysAfterReveal: 30,
+  /** Messages whose PASS-IT-ON code was never revealed are deleted on this date (Chișinău time). */
+  unrevealedMessagesDeleteOn: "2027-06-27",
   /** Sanity cap per order; larger team/class orders are handled by email. */
   maxBoxesPerOrder: 100,
 } as const;

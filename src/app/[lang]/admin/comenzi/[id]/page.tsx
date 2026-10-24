@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { RULES } from "@/lib/catalog";
+import { RULES, ruleDate } from "@/lib/catalog";
 import { getOrder, type Order } from "@/lib/orders";
 import { recordUrl, trackUrl } from "@/lib/emails";
 import { currentMessage, messageUrl, qrSvg } from "@/lib/messages";
@@ -171,7 +171,12 @@ async function MessageCard({ o }: { o: Order }) {
             ["Tip", m.kind],
             ["Creat", chisinauTime(m.createdAt)],
             ["Cod PASS-IT-ON", m.passCode ? `${m.passCode} (dezvăluit ${chisinauTime(m.revealedAt!)})` : "nedezvăluit"],
-            ["Se șterge", m.deleteAfter ? chisinauTime(m.deleteAfter) : "la 30 de zile după dezvăluire"],
+            [
+              "Se șterge",
+              m.deleteAfter
+                ? chisinauTime(m.deleteAfter)
+                : `la ${RULES.dataRetentionDaysAfterReveal} de zile după dezvăluire sau pe ${ruleDate(RULES.unrevealedMessagesDeleteOn, "ro")}`,
+            ],
           ]}
         />
       </div>

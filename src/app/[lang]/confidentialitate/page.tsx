@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "@/i18n";
 import { LegalPage } from "@/components/LegalPage";
-import { SITE } from "@/lib/catalog";
+import { RULES, SITE, ruleDate } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   title: "Confidențialitate",
@@ -40,8 +40,9 @@ export default async function Privacy({ params }: PageProps<"/[lang]/confidentia
         <li>
           <strong>Mesajul pentru codul QR</strong>: înregistrarea audio/video sau textul pe care îl lași
           destinatarului. Fișierele stau într-un spațiu de stocare privat și se deschid doar printr-un link
-          temporar, pentru cine scanează codul QR. Le ștergem la 30 de zile după ce destinatarul își dezvăluie
-          codul PASS-IT-ON.
+          temporar, pentru cine scanează codul QR. Le ștergem la {RULES.dataRetentionDaysAfterReveal} de zile după
+          ce destinatarul își dezvăluie codul PASS-IT-ON. Mesajele al căror cod nu a fost dezvăluit niciodată se
+          șterg pe {ruleDate(RULES.unrevealedMessagesDeleteOn, "ro")}.
         </li>
         <li>
           <strong>Asistentul „Harta emoției”</strong> și <strong>demonstrația /agent-demo</strong>: răspunsurile la

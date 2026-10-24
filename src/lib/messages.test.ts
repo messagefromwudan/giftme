@@ -55,6 +55,14 @@ describe("QR messages", () => {
     expect(await messageForRecipient(m.id)).toBeNull();
   });
 
+  it("a message whose code is never revealed is deleted on 27 June 2027 (Chișinău time)", async () => {
+    const m = await saveTextMessage(await order(), "Pentru tine");
+    await deleteExpiredMessages(new Date("2027-06-26T20:59:00Z")); // 23:59 on 26 June in Chișinău
+    expect(await messageForRecipient(m.id)).not.toBeNull();
+    await deleteExpiredMessages(new Date("2027-06-26T21:00:00Z")); // 00:00 on 27 June in Chișinău
+    expect(await messageForRecipient(m.id)).toBeNull();
+  });
+
   it("a new message replaces the old one", async () => {
     const o = await order();
     const first = await saveTextMessage(o, "prima");

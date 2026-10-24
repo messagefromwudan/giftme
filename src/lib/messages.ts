@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import QRCode from "qrcode";
 import { RULES } from "./catalog";
 import { orderBaseUrl } from "./origin";
+import { chisinauDate } from "./pricing";
 import { createPassItOnCode } from "./codes";
 import { db } from "./db";
 import { findOrderForCustomer, OrderError, type Order } from "./orders";
@@ -161,9 +162,10 @@ export async function revealPassCode(id: string) {
   return { code: rec.code, expiresAt: rec.expiresAt };
 }
 
-/** Daily cron: delete messages (and files) whose retention period is over. */
+/** Daily cron: delete messages (and files) whose retention period is over: 30 days after the
+ *  reveal, or, for codes never revealed, from RULES.unrevealedMessagesDeleteOn. */
 export async function deleteExpiredMessages(now = new Date()) {
-  const expired = await db().expiredMessages(now);
+  const expired = await db().expiredMessages(now, chisinauDate(now) >= RULES.unrevealedMessagesDeleteOn);
   await db().media.remove(expired.flatMap((m) => (m.storagePath ? [m.storagePath] : [])));
   for (const m of expired) await db().deleteMessage(m.id);
   return expired.length;

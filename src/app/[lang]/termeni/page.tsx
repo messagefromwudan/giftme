@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "@/i18n";
 import { LegalPage } from "@/components/LegalPage";
-import { OFFERS, RULES, SITE, getBox } from "@/lib/catalog";
+import { OFFERS, RULES, SITE, getBox, ruleDate } from "@/lib/catalog";
 
 const GM09 = getBox("GM-09")!;
 
@@ -93,6 +93,8 @@ export default async function Terms({ params }: PageProps<"/[lang]/termeni">) {
         <li>
           <strong>Date.</strong> Mesajele audio/video și datele de livrare se folosesc doar pentru comandă și se
           șterg la {RULES.dataRetentionDaysAfterReveal} de zile după ce destinatarul dezvăluie codul PASS-IT-ON.
+          Mesajele al căror cod nu a fost dezvăluit niciodată se șterg pe{" "}
+          {ruleDate(RULES.unrevealedMessagesDeleteOn, "ro")}.
         </li>
       </ol>
 

@@ -6,8 +6,9 @@ import { clientIp, rateLimit } from "@/lib/ratelimit";
 
 // Daily Vercel cron (vercel.json). Keeps the free Supabase project active and deletes expired
 // data: rate-limit windows, idempotency keys, and QR messages 30 days after the PASS-IT-ON
-// reveal (a promise in our terms, so it must not depend on any optional secret). It only ever
-// removes already-expired rows, so it is safe to call; a rate limit stops hammering.
+// reveal or, if never revealed, from RULES.unrevealedMessagesDeleteOn (a promise in our terms,
+// so it must not depend on any optional secret). It only ever removes already-expired rows, so
+// it is safe to call; a rate limit stops hammering.
 export async function GET(req: Request) {
   await connection();
   if (!dbConfigured()) return json({ ok: false, error: "DB_NOT_CONFIGURED" }, 503);

@@ -1,4 +1,4 @@
-import type { Locale } from "@/lib/catalog";
+import { RULES, ruleDate, type Locale } from "@/lib/catalog";
 
 export const LOCALES: Locale[] = ["ro", "en"];
 
@@ -251,7 +251,7 @@ const ro = {
     title: "Mesajul tău pentru codul QR",
     intro: (name: string) => `Înregistrează un mesaj pentru ${name}. Îl punem pe cutie ca un cod QR: îl scanează și te aude sau te vede. Gratuit.`,
     privacy:
-      "Mesajul e privat: îl vede doar cine scanează codul QR de pe cutie. Îl păstrăm într-un spațiu de stocare privat și îl ștergem la 30 de zile după ce destinatarul își dezvăluie codul PASS-IT-ON.",
+      `Mesajul e privat: îl vede doar cine scanează codul QR de pe cutie. Îl păstrăm într-un spațiu de stocare privat și îl ștergem la ${RULES.dataRetentionDaysAfterReveal} de zile după ce destinatarul își dezvăluie codul PASS-IT-ON sau, dacă codul nu e dezvăluit niciodată, pe ${ruleDate(RULES.unrevealedMessagesDeleteOn, "ro")}.`,
     tabs: { audio: "Audio", video: "Video", text: "Text", file: "Încarcă fișier" },
     start: "Începe înregistrarea",
     stop: "Oprește",
@@ -604,7 +604,7 @@ const en: Dict = {
     title: "Your message for the QR code",
     intro: (name: string) => `Record a message for ${name}. We put it on the box as a QR code: they scan it and hear or see you. Free.`,
     privacy:
-      "Your message is private: only whoever scans the QR code on the box can see it. We keep it in private storage and delete it 30 days after the recipient reveals their PASS-IT-ON code.",
+      `Your message is private: only whoever scans the QR code on the box can see it. We keep it in private storage and delete it ${RULES.dataRetentionDaysAfterReveal} days after the recipient reveals their PASS-IT-ON code or, if the code is never revealed, on ${ruleDate(RULES.unrevealedMessagesDeleteOn, "en")}.`,
     tabs: { audio: "Audio", video: "Video", text: "Text", file: "Upload a file" },
     start: "Start recording",
     stop: "Stop",
