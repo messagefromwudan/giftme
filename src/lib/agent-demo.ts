@@ -190,7 +190,7 @@ export async function runLlmAgent(
       tag: "agent-demo",
       onText: (text) => {
         start();
-        emit({ type: "say", text });
+        emit({ type: "say", text: text.replace(/\*\*|__/g, "").replace(/^#+\s*/gm, "") });
       },
       execute: async (name, raw) => {
         start();
