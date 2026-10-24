@@ -32,14 +32,12 @@ export type RunOptions = {
   tag?: string;
   /** Which feature is calling: "chat" (the widget's free questions) may use its own model. */
   feature?: LlmFeature;
-  /** Exact model for this run (model comparison on previews); overrides the env settings. */
-  model?: string;
 };
 
 export type LlmFeature = "default" | "chat";
 
 export type Usage = { inputTokens: number; cachedInputTokens: number; outputTokens: number; calls: number };
-export type RunResult = { texts: string[]; refused: boolean; usage: Usage; model?: string };
+export type RunResult = { texts: string[]; refused: boolean; usage: Usage };
 
 const emptyUsage = (): Usage => ({ inputTokens: 0, cachedInputTokens: 0, outputTokens: 0, calls: 0 });
 
@@ -74,25 +72,16 @@ export function llmInfo(feature: LlmFeature = "default") {
 /** The gpt-4 and gpt-3.5 families have no reasoning settings and reject them. */
 export const openaiSupportsReasoning = (model: string) => !/^gpt-(4|3\.5)/.test(model);
 
-/** Model ids the configured OpenAI key can use (model comparison on previews only). */
-export async function listOpenAIModels(): Promise<string[]> {
-  if (!process.env.OPENAI_API_KEY) throw new LlmUnavailableError("No API key configured");
-  const client = new OpenAI({ maxRetries: 1, timeout: 15_000 });
-  const ids: string[] = [];
-  for await (const m of client.models.list()) ids.push(m.id);
-  return ids.sort();
-}
-
 export function llmConfigured(): boolean {
   return provider() === "anthropic" ? Boolean(process.env.ANTHROPIC_API_KEY) : Boolean(process.env.OPENAI_API_KEY);
 }
 
 export async function runToolAgent(opts: RunOptions): Promise<RunResult> {
   if (!llmConfigured()) throw new LlmUnavailableError("No API key configured");
-  const model = opts.model ?? llmInfo(opts.feature).model;
+  const model = llmInfo(opts.feature).model;
   const result = await (provider() === "anthropic" ? runAnthropic(opts) : runOpenAI(opts, model));
   logUsage(opts.tag, result.usage, model);
-  return { ...result, model };
+  return result;
 }
 
 async function execSafely(execute: ToolExecutor, name: string, rawArgs: string | unknown) {

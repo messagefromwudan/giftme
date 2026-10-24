@@ -54,7 +54,7 @@ kept in memory and emails are printed to the console.
 | `SITE_URL` | optional | Base URL in emails (default `https://www.giftme.site`). |
 | `OPENAI_API_KEY` | for AI | Harta emoției, the site-wide chat widget (free questions, `/api/ask`) and the /agent-demo agent. Without it all run their non-AI fallback (the widget shows fixed FAQ answers). |
 | `OPENAI_MODEL` | optional | Model id (default `gpt-6-astra`, OpenAI's recommended starting model). E.g. `gpt-6.1-sol` to cut cost. |
-| `OPENAI_MODEL_CHAT` | optional | Model for the chat widget's free questions only; defaults to `OPENAI_MODEL`. On previews, the `x-eval-model` header on `/api/ask` overrides it per request for model comparison. |
+| `OPENAI_MODEL_CHAT` | optional | Model for the chat widget's free questions only; defaults to `OPENAI_MODEL`. |
 | `LLM_PROVIDER` | optional | `openai` (default) or `anthropic` (then `ANTHROPIC_API_KEY`, optional `ANTHROPIC_MODEL`). All model calls go through `src/lib/llm.ts`. |
 
 ## Database (Supabase)

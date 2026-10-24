@@ -179,45 +179,6 @@ describe("fallback mode", () => {
   });
 });
 
-describe("model comparison switch (previews only)", () => {
-  const post = (model?: string) =>
-    POST(
-      new Request("http://x/api/ask", {
-        method: "POST",
-        headers: model ? { "x-eval-model": model } : {},
-        body: JSON.stringify({ lang: "ro", messages: [{ role: "user", content: "Salut" }] }),
-      }),
-    );
-
-  it("production ignores x-eval-model and never returns usage or the model's original words", async () => {
-    vi.stubEnv("VERCEL_ENV", "production");
-    let asked: string | undefined = "unset";
-    script.run = async (opts) => {
-      asked = opts.model;
-      return { texts: ["Livrarea e gratuită peste 500 MDL."], refused: false, usage, model: "x" };
-    };
-    const body = await (await post("cheap-model")).json();
-    vi.unstubAllEnvs();
-    expect(asked).toBeUndefined();
-    expect(body).not.toHaveProperty("usage");
-    expect(body).not.toHaveProperty("original");
-    expect(body.replaced).toBe("guard");
-  });
-
-  it("a preview uses the requested model and reports usage", async () => {
-    vi.stubEnv("VERCEL_ENV", "preview");
-    let asked: string | undefined;
-    script.run = async (opts) => {
-      asked = opts.model;
-      return { texts: [NO_ANSWER], refused: false, usage: { ...usage, inputTokens: 4000 }, model: opts.model };
-    };
-    const body = await (await post("cheap-model")).json();
-    vi.unstubAllEnvs();
-    expect(asked).toBe("cheap-model");
-    expect(body).toMatchObject({ model: "cheap-model", usage: { inputTokens: 4000 }, replaced: "no_answer" });
-  });
-});
-
 describe("limits and privacy", () => {
   it("a session is limited to 10 questions", async () => {
     const msgs = Array.from({ length: 2 * MAX_ASK_MESSAGES + 1 }, (_, i) => ({ role: i % 2 ? "assistant" : "user", content: "x" }));
