@@ -6,6 +6,7 @@ import { getDict, hasLocale } from "@/i18n";
 import type { Locale } from "@/lib/catalog";
 import { messageForRecipient } from "@/lib/messages";
 import { PassItOn } from "@/components/messages/PassItOn";
+import { ChatWidget } from "@/components/assistant/ChatWidget";
 
 export const metadata: Metadata = {
   title: "Un mesaj pentru tine",
@@ -42,6 +43,7 @@ async function Message({ params }: { params: PageProps<"/[lang]/mesaj/[id]">["pa
       <div className="mt-16 text-center">
         <p className="hand text-5xl text-red">GiftMe!</p>
         <p className="mt-4 text-lg">{t.missing}</p>
+        <ChatWidget lang={lang} />
       </div>
     );
   }
@@ -63,6 +65,7 @@ async function Message({ params }: { params: PageProps<"/[lang]/mesaj/[id]">["pa
       </div>
 
       <PassItOn lang={lang} messageId={m.id} initial={m.passCode ? { code: m.passCode.code, expiresAt: m.passCode.expiresAt } : null} />
+      <ChatWidget lang={lang} />
     </div>
   );
 }

@@ -52,7 +52,7 @@ kept in memory and emails are printed to the console.
 | `CHECKOUT_OPEN` | optional | `true` / `false` overrides the launch time (online orders open 2 Nov 2026, 09:30). Use `true` on Preview for testing. |
 | `ORDER_NOTIFY_TO` | optional | Where new-order emails go (default `fe.giftme@gmail.com`). |
 | `SITE_URL` | optional | Base URL in emails (default `https://www.giftme.site`). |
-| `OPENAI_API_KEY` | for AI | Harta emoției and the /agent-demo agent. Without it both run their non-AI fallback. |
+| `OPENAI_API_KEY` | for AI | Harta emoției, the site-wide chat widget (free questions, `/api/ask`) and the /agent-demo agent. Without it all run their non-AI fallback (the widget shows fixed FAQ answers). |
 | `OPENAI_MODEL` | optional | Model id (default `gpt-6-astra`, OpenAI's recommended starting model). E.g. `gpt-6.1-sol` to cut cost. |
 | `LLM_PROVIDER` | optional | `openai` (default) or `anthropic` (then `ANTHROPIC_API_KEY`, optional `ANTHROPIC_MODEL`). All model calls go through `src/lib/llm.ts`. |
 

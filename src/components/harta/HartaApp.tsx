@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { getBox, type Locale } from "@/lib/catalog";
 import type { Answers, Proposal } from "@/lib/harta";
 import { useCart } from "@/lib/cart";
@@ -14,8 +14,10 @@ type Shown = Msg & { proposal?: Proposal | null };
 const MAX_USER_MESSAGES = 12;
 const CHECKOUT_DRAFT = "giftme-checkout-draft-v1";
 
-export function HartaApp({ lang }: { lang: Locale }) {
+/** compact: inside the chat widget panel (narrow, always one column). */
+export function HartaApp({ lang, compact = false }: { lang: Locale; compact?: boolean }) {
   const t = getDict(lang).harta;
+  const inputId = useId();
   const [answers, setAnswers] = useState<Partial<Answers>>({});
   const [started, setStarted] = useState(false);
   const [shown, setShown] = useState<Shown[]>([]);
@@ -78,10 +80,10 @@ export function HartaApp({ lang }: { lang: Locale }) {
 
   if (!started) {
     return (
-      <div className="space-y-8">
+      <div className={compact ? "space-y-6" : "space-y-8"}>
         {(["who", "occasion", "personality"] as const).map((k) => (
           <fieldset key={k}>
-            <legend className="mb-3 font-display text-xl font-black">{t.q[k]}</legend>
+            <legend className={`mb-3 font-display font-black ${compact ? "text-lg" : "text-xl"}`}>{t.q[k]}</legend>
             <div className="flex flex-wrap gap-2">
               {t[k].map((opt) => (
                 <Chip key={opt} on={answers[k] === opt} onClick={() => setAnswers((a) => ({ ...a, [k]: opt }))}>
@@ -92,7 +94,7 @@ export function HartaApp({ lang }: { lang: Locale }) {
           </fieldset>
         ))}
         <fieldset>
-          <legend className="mb-3 font-display text-xl font-black">{t.q.budget}</legend>
+          <legend className={`mb-3 font-display font-black ${compact ? "text-lg" : "text-xl"}`}>{t.q.budget}</legend>
           <div className="flex flex-wrap gap-2">
             {t.budget.map(([v, label]) => (
               <Chip key={v} on={answers.budget === v} onClick={() => setAnswers((a) => ({ ...a, budget: v as Answers["budget"] }))}>
@@ -120,7 +122,7 @@ export function HartaApp({ lang }: { lang: Locale }) {
           ) : (
             <div key={i} className="space-y-3">
               <p className="w-fit max-w-[90%] whitespace-pre-line rounded-2xl rounded-bl-sm bg-white px-4 py-2.5 text-ink">{m.content}</p>
-              {m.proposal && <ProposalCard p={m.proposal} lang={lang} />}
+              {m.proposal && <ProposalCard p={m.proposal} lang={lang} compact={compact} />}
             </div>
           ),
         )}
@@ -133,11 +135,11 @@ export function HartaApp({ lang }: { lang: Locale }) {
         </p>
       )}
       <form onSubmit={send} className="flex gap-2">
-        <label htmlFor="harta-input" className="sr-only">
+        <label htmlFor={inputId} className="sr-only">
           {t.placeholder}
         </label>
         <input
-          id="harta-input"
+          id={inputId}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           maxLength={500}
@@ -172,7 +174,7 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
   );
 }
 
-function ProposalCard({ p, lang }: { p: Proposal; lang: Locale }) {
+function ProposalCard({ p, lang, compact }: { p: Proposal; lang: Locale; compact: boolean }) {
   const t = getDict(lang).harta;
   const cart = useCart();
   const [added, setAdded] = useState(false);
@@ -191,8 +193,8 @@ function ProposalCard({ p, lang }: { p: Proposal; lang: Locale }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl bg-white text-ink sm:flex">
-      {first && <BoxArt box={first} label="" crop className="aspect-[4/3] w-full sm:w-56 sm:shrink-0" />}
+    <div className={`overflow-hidden rounded-3xl bg-white text-ink ${compact ? "" : "sm:flex"}`}>
+      {first && <BoxArt box={first} label="" crop className={`w-full ${compact ? "aspect-[2/1]" : "aspect-[4/3] sm:w-56 sm:shrink-0"}`} />}
       <div className="flex-1 space-y-3 p-5">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted">{t.proposalTitle}</p>
         {p.items.map((i) => (

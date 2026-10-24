@@ -80,7 +80,8 @@ export function SiteFooter({ lang }: { lang: Locale }) {
   const t = getDict(lang);
   return (
     <footer className="bg-ink text-white">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-end md:justify-between">
+      {/* Extra bottom space on phones: the floating chat button must not cover the footer links. */}
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-24 pt-10 sm:px-6 sm:pb-10 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="hand text-3xl text-white">{SITE.slogan[lang]}</p>
           <p className="mt-2 text-sm text-muted-dark">
