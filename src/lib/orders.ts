@@ -14,6 +14,7 @@ import {
   type CodeRecord,
 } from "./codes";
 import { db, StoreUnavailableError } from "./db";
+import { trustedOrigin } from "./origin";
 import type { OrderStatus } from "./status";
 
 export { STATUS_LABEL, type OrderStatus } from "./status";
@@ -118,6 +119,8 @@ export type Order = {
   updatedAt: string;
   lang: Locale;
   source: OrderSource;
+  /** The (trusted) site the order was placed on; links in emails point back to it. */
+  siteOrigin?: string;
   simulated: true;
   status: OrderStatus;
   history: { status: OrderStatus; at: string; by: string; note?: string }[];
@@ -237,7 +240,7 @@ export async function priceOrder(
 
 export async function createOrder(
   raw: unknown,
-  opts: { source: OrderSource; idempotencyKey?: string; now?: Date },
+  opts: { source: OrderSource; idempotencyKey?: string; now?: Date; siteOrigin?: string },
 ): Promise<{ order: Order; replayed: boolean }> {
   const parsed = orderInputSchema.safeParse(raw);
   if (!parsed.success) {
@@ -289,6 +292,7 @@ export async function createOrder(
     updatedAt: createdAt,
     lang: input.lang,
     source: opts.source,
+    ...(trustedOrigin(opts.siteOrigin) ? { siteOrigin: trustedOrigin(opts.siteOrigin) } : {}),
     simulated: true,
     status,
     history: [{ status, at: createdAt, by: opts.source }],

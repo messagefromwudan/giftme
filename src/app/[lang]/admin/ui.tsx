@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { connection } from "next/server";
+import { unstable_rethrow } from "next/navigation";
 import type { ReactNode } from "react";
 import { adminConfigured, isAdmin } from "@/lib/admin-auth";
 import { STATUS_LABEL, type OrderStatus } from "@/lib/status";
@@ -29,6 +30,38 @@ export function StatusBadge({ status }: { status: OrderStatus }) {
       {adminLabel(status)}
     </span>
   );
+}
+
+/** Friendly message when the database can't be reached (paused project, outage, missing settings). */
+export function AdminProblem({ title, children }: { title: string; children?: ReactNode }) {
+  return (
+    <div role="alert" className="space-y-2 rounded-2xl bg-yellow-100 p-5">
+      <p className="font-display text-xl font-black">{title}</p>
+      {children && <div className="text-sm">{children}</div>}
+      <Link href="/admin/" className="inline-block text-sm underline">
+        ← Toate comenzile
+      </Link>
+    </div>
+  );
+}
+
+export const STORAGE_PROBLEM = (
+  <>
+    Nu ne putem conecta acum la baza de date, așa că lista de comenzi nu poate fi afișată. Încearcă din nou
+    peste un minut. Dacă problema continuă, verifică în Supabase că proiectul GiftMe este activ și în Vercel că{" "}
+    <code>SUPABASE_URL</code> și <code>SUPABASE_SERVICE_ROLE_KEY</code> sunt setate pentru acest mediu.
+  </>
+);
+
+/** Loads admin data; storage failures become a message instead of crashing the page. */
+export async function loadOrProblem<T>(load: () => Promise<T>): Promise<{ ok: true; data: T } | { ok: false }> {
+  try {
+    return { ok: true, data: await load() };
+  } catch (e) {
+    unstable_rethrow(e);
+    console.error("[admin] storage error", e);
+    return { ok: false };
+  }
 }
 
 /** Renders the login form instead of `children` until the admin is signed in. */

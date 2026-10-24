@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     }
 
     const idempotencyKey = req.headers.get("idempotency-key") ?? undefined;
-    const { order, replayed } = await createOrder(body, { source: "web", idempotencyKey });
+    const { order, replayed } = await createOrder(body, { source: "web", idempotencyKey, siteOrigin: new URL(req.url).origin });
     if (!replayed) {
       after(async () => {
         const emails = await sendOrderEmails(order);

@@ -42,7 +42,13 @@ export async function POST(req: Request) {
     const m = await currentMessage(order.id);
     return json({
       message: m
-        ? { kind: m.kind, text: m.body ?? null, url: messageUrl(m.id), qrSvg: await qrSvg(messageUrl(m.id)), createdAt: m.createdAt }
+        ? {
+            kind: m.kind,
+            text: m.body ?? null,
+            url: messageUrl(m.id, order.siteOrigin),
+            qrSvg: await qrSvg(messageUrl(m.id, order.siteOrigin)),
+            createdAt: m.createdAt,
+          }
         : null,
       recipient: order.recipient.name,
     });

@@ -163,8 +163,11 @@ export async function agentQuote(input: z.input<typeof quoteInput>) {
  * Places an order on behalf of a human. It is created as "awaiting_approval": the buyer gets
  * an email with a confirmation link and nothing is processed until they confirm.
  */
-export async function agentPlaceOrder(body: unknown, opts: { source: Exclude<OrderSource, "web">; idempotencyKey: string }) {
-  const { order, replayed } = await createOrder(body, { source: opts.source, idempotencyKey: opts.idempotencyKey });
+export async function agentPlaceOrder(
+  body: unknown,
+  opts: { source: Exclude<OrderSource, "web">; idempotencyKey: string; siteOrigin?: string },
+) {
+  const { order, replayed } = await createOrder(body, opts);
   if (!replayed) {
     const emails = await sendOrderEmails(order);
     await patchOrder(order, (o) => Object.assign(o.emails, emails));

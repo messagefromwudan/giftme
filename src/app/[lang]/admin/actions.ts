@@ -13,6 +13,9 @@ export async function login(_: unknown, form: FormData): Promise<{ error?: strin
   const wait = await rateLimit(LIMITS.adminLogin, clientIp(await headers()));
   if (wait) return { error: `Prea multe încercări. Încearcă din nou peste ${Math.ceil(wait / 60)} min.` };
   if (!passwordMatches(String(form.get("password") ?? ""))) return { error: "Parolă greșită." };
+  // Return to the page the link pointed at (e.g. "Deschide în admin" in an email); admin paths only.
+  const next = String(form.get("next") ?? "");
+  const target = /^\/admin\/(comenzi\/GM-\d{1,9}\/)?$/.test(next) ? next : "/admin/";
   const s = newSessionValue();
   (await cookies()).set(ADMIN_COOKIE, s.value, {
     httpOnly: true,
@@ -21,7 +24,7 @@ export async function login(_: unknown, form: FormData): Promise<{ error?: strin
     path: "/",
     maxAge: s.maxAge,
   });
-  redirect("/admin/");
+  redirect(target);
 }
 
 export async function logout() {

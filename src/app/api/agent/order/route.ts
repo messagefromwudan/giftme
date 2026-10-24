@@ -26,7 +26,11 @@ export async function POST(req: Request) {
       const w = await rateLimit(LIMITS.approvalEmail, normalizeEmail(body.buyer.email));
       if (w) return withCors(tooMany(w));
     }
-    const result = await agentPlaceOrder(body, { source: "agent_api", idempotencyKey: `agent:${idempotencyKey}` });
+    const result = await agentPlaceOrder(body, {
+      source: "agent_api",
+      idempotencyKey: `agent:${idempotencyKey}`,
+      siteOrigin: new URL(req.url).origin,
+    });
     return withCors(json(result, result.replayed ? 200 : 201));
   } catch (e) {
     return withCors(errorResponse(e));

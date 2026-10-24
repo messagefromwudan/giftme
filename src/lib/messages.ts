@@ -1,7 +1,8 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import QRCode from "qrcode";
-import { RULES, SITE } from "./catalog";
+import { RULES } from "./catalog";
+import { orderBaseUrl } from "./origin";
 import { createPassItOnCode } from "./codes";
 import { db } from "./db";
 import { findOrderForCustomer, OrderError, type Order } from "./orders";
@@ -47,7 +48,7 @@ const MEDIA_TYPES: Record<string, { kind: "audio" | "video"; ext: string }> = {
 /** "audio/webm;codecs=opus" → "audio/webm". */
 export const baseMime = (m: string) => m.split(";")[0].trim().toLowerCase();
 
-export const messageUrl = (id: string) => `${process.env.SITE_URL || SITE.url}/mesaj/${id}/`;
+export const messageUrl = (id: string, siteOrigin?: string) => `${orderBaseUrl(siteOrigin)}/mesaj/${id}/`;
 
 export const isReady = (m: Message) => m.kind === "text" ? Boolean(m.body) : Boolean(m.storagePath);
 

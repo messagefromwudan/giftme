@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
 import { RULES } from "@/lib/catalog";
 import { getOrder, type Order } from "@/lib/orders";
 import { recordUrl, trackUrl } from "@/lib/emails";
 import { currentMessage, messageUrl, qrSvg } from "@/lib/messages";
 import { ORDER_STATUSES } from "@/lib/status";
 import { changeStatus, giftStep, quoteGift } from "../../actions";
-import { AdminGate, StatusBadge, adminLabel, chisinauTime } from "../../ui";
+import { AdminGate, AdminProblem, STORAGE_PROBLEM, StatusBadge, adminLabel, chisinauTime, loadOrProblem } from "../../ui";
 
 export const metadata: Metadata = { title: "Admin · comandă", robots: { index: false, follow: false } };
 
@@ -26,8 +25,16 @@ export default function AdminOrderPage({ params }: PageProps<"/[lang]/admin/come
 
 async function Detail({ params }: { params: PageProps<"/[lang]/admin/comenzi/[id]">["params"] }) {
   const { id } = await params;
-  const o = await getOrder(id);
-  if (!o) notFound();
+  const loaded = await loadOrProblem(() => getOrder(id));
+  if (!loaded.ok) return <AdminProblem title="Baza de date nu răspunde">{STORAGE_PROBLEM}</AdminProblem>;
+  const o = loaded.data;
+  if (!o) {
+    return (
+      <AdminProblem title={`Comanda ${id.slice(0, 20).toUpperCase()} nu există`}>
+        Verifică numărul comenzii (de forma GM-1001) sau caut-o în listă.
+      </AdminProblem>
+    );
+  }
   const p = o.personalization;
 
   return (
@@ -140,7 +147,9 @@ async function Detail({ params }: { params: PageProps<"/[lang]/admin/comenzi/[id
 }
 
 async function MessageCard({ o }: { o: Order }) {
-  const m = await currentMessage(o.id);
+  const loaded = await loadOrProblem(() => currentMessage(o.id));
+  if (!loaded.ok) return <Card title="Mesaj QR">Mesajul nu poate fi încărcat acum.</Card>;
+  const m = loaded.data;
   if (!m) {
     return (
       <Card title="Mesaj QR">
@@ -151,7 +160,7 @@ async function MessageCard({ o }: { o: Order }) {
       </Card>
     );
   }
-  const url = messageUrl(m.id);
+  const url = messageUrl(m.id, o.siteOrigin);
   const svg = await qrSvg(url);
   return (
     <Card title="Mesaj QR (de tipărit pe cutie)">

@@ -1,6 +1,7 @@
 import "server-only";
 import nodemailer from "nodemailer";
 import { RULES, SITE, type Locale } from "./catalog";
+import { orderBaseUrl } from "./origin";
 import { STATUS_LABEL, type Order } from "./orders";
 
 // Sends through the fe.giftme@gmail.com account (SMTP_USER + a Gmail app password in SMTP_PASS).
@@ -99,12 +100,13 @@ const T = {
   },
 } satisfies Record<Locale, unknown>;
 
-const siteUrl = () => process.env.SITE_URL || SITE.url;
+const base = (o: Order) => orderBaseUrl(o.siteOrigin);
 const langPrefix = (lang: Locale) => (lang === "en" ? "/en" : "");
-export const recordUrl = (o: Order) => `${siteUrl()}${langPrefix(o.lang)}/mesaj/nou/?id=${o.id}&t=${o.token}`;
-export const trackUrl = (o: Order) => `${siteUrl()}${langPrefix(o.lang)}/urmarire/?id=${o.id}&t=${o.token}`;
+export const recordUrl = (o: Order) => `${base(o)}${langPrefix(o.lang)}/mesaj/nou/?id=${o.id}&t=${o.token}`;
+export const adminUrl = (o: Order) => `${base(o)}/admin/comenzi/${o.id}/`;
+export const trackUrl = (o: Order) => `${base(o)}${langPrefix(o.lang)}/urmarire/?id=${o.id}&t=${o.token}`;
 export const approveUrl = (o: Order) =>
-  `${siteUrl()}${langPrefix(o.lang)}/confirma-comanda/?id=${o.id}&a=${o.approvalToken}`;
+  `${base(o)}${langPrefix(o.lang)}/confirma-comanda/?id=${o.id}&a=${o.approvalToken}`;
 
 function layout(body: string) {
   return `<!doctype html><html><body style="margin:0;background:#fbf6f1;font-family:Arial,Helvetica,sans-serif;color:#111">
@@ -201,7 +203,7 @@ ${field("Cadou GM-09", o.customGift?.idea)}
 ${field("Note client", o.notes)}
 </table>
 ${o.customGift ? `<p style="font-size:14px">GM-09: trimiteți cotația din panoul de administrare. Peste ${RULES.custom.maxGiftValueWithoutApproval} MDL e nevoie de aprobarea coordonatorului.</p>` : ""}
-${btn(`${siteUrl()}/admin/comenzi/${o.id}/`, "Deschide în admin")}`;
+${btn(adminUrl(o), "Deschide în admin")}`;
   return { subject: `Comandă nouă ${o.id} · ${o.quote.total} MDL · ${o.source}`, html: layout(body) };
 }
 

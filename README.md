@@ -21,6 +21,7 @@ npm install
 npm run dev        # http://localhost:3000
 npm test           # unit tests (pricing + orders, in-memory store)
 TEST_SUPABASE=1 SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npm test   # also against a real database
+CHROME_PATH="/path/to/chrome" npm run e2e   # browser tests (Playwright): admin deep links, login, storage down
 npm run lint
 npm run build && npm start   # production build
 ```

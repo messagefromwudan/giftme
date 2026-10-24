@@ -23,8 +23,8 @@ import { CORS, preflight } from "@/lib/http";
 // Tools only read the catalog, price on the server, or create orders that the human must
 // confirm by email. Tool inputs are untrusted data.
 
-/** The caller's IP for the current MCP request, for per-client rate limits inside tools. */
-const requestIp = new AsyncLocalStorage<string>();
+/** The caller's IP and our own origin for the current MCP request (rate limits, email links). */
+const requestCtx = new AsyncLocalStorage<{ ip: string; origin: string }>();
 
 const result = (data: unknown) => ({
   content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
@@ -117,11 +117,17 @@ const handler = createMcpHandler(
       async ({ idempotency_key, order }) => {
         try {
           if (!checkoutOpen()) throw new OrderError("CHECKOUT_CLOSED", `Online orders open at ${CHECKOUT_OPENS_AT}`);
-          const ip = requestIp.getStore() ?? "unknown";
+          const ip = requestCtx.getStore()?.ip ?? "unknown";
           if (await rateLimit(LIMITS.agentOrder, ip)) throw new OrderError("RATE_LIMITED", "Too many orders; try later");
           if (await rateLimit(LIMITS.approvalEmail, normalizeEmail(order.buyer.email)))
             throw new OrderError("RATE_LIMITED", "Too many confirmation emails for this buyer; try later");
-          return result(await agentPlaceOrder(order, { source: "mcp", idempotencyKey: `mcp:${idempotency_key}` }));
+          return result(
+            await agentPlaceOrder(order, {
+              source: "mcp",
+              idempotencyKey: `mcp:${idempotency_key}`,
+              siteOrigin: requestCtx.getStore()?.origin,
+            }),
+          );
         } catch (e) {
           return failure(e);
         }
@@ -156,7 +162,7 @@ const handler = createMcpHandler(
 async function limited(req: Request) {
   const wait = await rateLimit(LIMITS.mcp, clientIp(req.headers));
   if (wait) return new Response(JSON.stringify({ error: "RATE_LIMITED" }), { status: 429, headers: { ...CORS, "Retry-After": String(wait) } });
-  const res = await requestIp.run(clientIp(req.headers), () => handler(req));
+  const res = await requestCtx.run({ ip: clientIp(req.headers), origin: new URL(req.url).origin }, () => handler(req));
   const out = new Response(res.body, res);
   for (const [k, v] of Object.entries(CORS)) out.headers.set(k, v);
   return out;

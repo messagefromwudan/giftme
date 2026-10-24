@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { listOrders } from "@/lib/orders";
 import { ORDER_STATUSES, type OrderStatus } from "@/lib/status";
 import { dbConfigured } from "@/lib/db";
-import { AdminGate, StatusBadge, adminLabel, chisinauTime } from "./ui";
+import { AdminGate, AdminProblem, STORAGE_PROBLEM, StatusBadge, adminLabel, chisinauTime, loadOrProblem } from "./ui";
 
 export const metadata: Metadata = { title: "Admin", robots: { index: false, follow: false } };
 
@@ -23,7 +23,9 @@ export default function AdminPage({ searchParams }: PageProps<"/[lang]/admin">) 
 async function Orders({ searchParams }: { searchParams: PageProps<"/[lang]/admin">["searchParams"] }) {
   const sp = await searchParams;
   const filter = typeof sp.status === "string" && (ORDER_STATUSES as string[]).includes(sp.status) ? (sp.status as OrderStatus) : null;
-  const all = await listOrders(1000);
+  const loaded = await loadOrProblem(() => listOrders(1000));
+  if (!loaded.ok) return <AdminProblem title="Baza de date nu răspunde">{STORAGE_PROBLEM}</AdminProblem>;
+  const all = loaded.data;
   const orders = filter ? all.filter((o) => o.status === filter) : all;
   const counts = Object.fromEntries(ORDER_STATUSES.map((s) => [s, all.filter((o) => o.status === s).length]));
   const total = all.filter((o) => o.status !== "cancelled").reduce((n, o) => n + o.quote.total, 0);
