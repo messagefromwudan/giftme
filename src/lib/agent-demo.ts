@@ -296,8 +296,12 @@ export async function runScriptedAgent(scenario: Scenario, origin: string, lang:
       ? ro
         ? `Comanda ${info.id} așteaptă confirmarea clientului din email.`
         : `Order ${info.id} is waiting for the customer's email confirmation.`
-      : ro
-        ? "Comanda nu a putut fi plasată (vezi răspunsul serverului)."
-        : "The order could not be placed (see the server response).",
+      : order.text.includes("CHECKOUT_CLOSED")
+        ? ro
+          ? "Comenzile online sunt închise momentan, așa că agentul nu a plasat comanda."
+          : "Online ordering is closed at the moment, so the agent did not place the order."
+        : ro
+          ? "Comanda nu a putut fi plasată (vezi răspunsul serverului)."
+          : "The order could not be placed (see the server response).",
   });
 }

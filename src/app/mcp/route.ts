@@ -13,7 +13,7 @@ import {
   searchBoxes,
   searchInput,
 } from "@/lib/agent";
-import { checkoutOpen, CHECKOUT_OPENS_AT, OrderError, orderInputSchema } from "@/lib/orders";
+import { CHECKOUT_CLOSED_MESSAGE, checkoutOpen, OrderError, orderInputSchema } from "@/lib/orders";
 import { normalizeEmail } from "@/lib/codes";
 import { QuoteError } from "@/lib/pricing";
 import { clientIp, LIMITS, rateLimit } from "@/lib/ratelimit";
@@ -116,7 +116,7 @@ const handler = createMcpHandler(
       },
       async ({ idempotency_key, order }) => {
         try {
-          if (!checkoutOpen()) throw new OrderError("CHECKOUT_CLOSED", `Online orders open at ${CHECKOUT_OPENS_AT}`);
+          if (!checkoutOpen()) throw new OrderError("CHECKOUT_CLOSED", CHECKOUT_CLOSED_MESSAGE);
           const ip = requestCtx.getStore()?.ip ?? "unknown";
           if (await rateLimit(LIMITS.agentOrder, ip)) throw new OrderError("RATE_LIMITED", "Too many orders; try later");
           if (await rateLimit(LIMITS.approvalEmail, normalizeEmail(order.buyer.email)))

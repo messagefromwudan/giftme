@@ -21,15 +21,16 @@ export { STATUS_LABEL, type OrderStatus } from "./status";
 
 // ---------- Checkout window ----------
 
-/** Online ordering opens at the launch, 2 Nov 2026 09:30 Chișinău. CHECKOUT_OPEN=true|false overrides. */
-export const CHECKOUT_OPENS_AT = "2026-11-02T09:30:00+02:00";
-
-export function checkoutOpen(now = new Date()): boolean {
-  const flag = process.env.CHECKOUT_OPEN;
-  if (flag === "true") return true;
-  if (flag === "false") return false;
-  return now >= new Date(CHECKOUT_OPENS_AT);
+/**
+ * The one switch for online ordering (website, agent API, MCP, /agent-demo): open only when
+ * CHECKOUT_OPEN is exactly "true". Unset or any other value keeps checkout closed. Changing it
+ * needs a redeploy (Vercel reads environment variables at deploy time).
+ */
+export function checkoutOpen(): boolean {
+  return process.env.CHECKOUT_OPEN?.trim() === "true";
 }
+
+export const CHECKOUT_CLOSED_MESSAGE = "Online ordering is closed at the moment. Quotes still work; please try again later.";
 
 // ---------- Input validation (all text is untrusted) ----------
 

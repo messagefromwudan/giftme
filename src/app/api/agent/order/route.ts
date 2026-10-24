@@ -1,5 +1,5 @@
 import { agentPlaceOrder } from "@/lib/agent";
-import { checkoutOpen, CHECKOUT_OPENS_AT } from "@/lib/orders";
+import { CHECKOUT_CLOSED_MESSAGE, checkoutOpen } from "@/lib/orders";
 import { normalizeEmail } from "@/lib/codes";
 import { clientIp, LIMITS, rateLimit } from "@/lib/ratelimit";
 import { errorResponse, json, preflight, readJson, tooMany, withCors } from "@/lib/http";
@@ -10,7 +10,7 @@ export const OPTIONS = preflight;
 export async function POST(req: Request) {
   try {
     if (!checkoutOpen()) {
-      return withCors(json({ error: "CHECKOUT_CLOSED", message: `Online orders open at ${CHECKOUT_OPENS_AT}` }, 403));
+      return withCors(json({ error: "CHECKOUT_CLOSED", message: CHECKOUT_CLOSED_MESSAGE }, 403));
     }
     const idempotencyKey = req.headers.get("idempotency-key")?.trim();
     if (!idempotencyKey || idempotencyKey.length < 8 || idempotencyKey.length > 100) {

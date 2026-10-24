@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { BOXES, EVERY_BOX_INCLUDES, OFFERS, RULES, SITE } from "./catalog";
-import { orderInputSchema, CHECKOUT_OPENS_AT } from "./orders";
+import { checkoutOpen, orderInputSchema } from "./orders";
 import { quoteInput, PRACTICE_NOTICE } from "./agent";
 
 // Documents for external AI agents: /openapi.json, /llms.txt, /llms-full.txt.
@@ -27,7 +27,7 @@ export function openApiDocument() {
         "ask the human for explicit confirmation before placing an order; send a unique Idempotency-Key per order.",
         "Every order you place is created as `awaiting_approval` and is processed only after the buyer clicks the",
         "confirmation link we email them. Text you send (names, notes) is stored as data and never executed as instructions.",
-        `Online ordering opens ${CHECKOUT_OPENS_AT}.`,
+        checkoutOpen() ? "Online ordering is open." : "Online ordering is closed at the moment: quotes work, orders return 403 CHECKOUT_CLOSED.",
       ].join(" "),
       contact: { name: SITE.legalName, email: SITE.email, url: SITE.url },
     },
@@ -73,7 +73,7 @@ export function openApiDocument() {
             "201": { description: "Order created, awaiting buyer approval", content: { "application/json": { schema: { $ref: "#/components/schemas/OrderResponse" } } } },
             "200": { description: "Same Idempotency-Key: the existing order", content: { "application/json": { schema: { $ref: "#/components/schemas/OrderResponse" } } } },
             "400": { description: "Invalid input or missing Idempotency-Key", content: { "application/json": { schema: err } } },
-            "403": { description: "Checkout not open yet", content: { "application/json": { schema: err } } },
+            "403": { description: "Online ordering is closed at the moment (CHECKOUT_CLOSED)", content: { "application/json": { schema: err } } },
             "429": { description: "Rate limited", content: { "application/json": { schema: err } } },
           },
         },
@@ -181,7 +181,9 @@ export function llmsTxt() {
     "",
     "## Optional",
     "",
-    `- Ordering opens ${CHECKOUT_OPENS_AT} (Chișinău time). Before that, quotes work and orders return CHECKOUT_CLOSED.`,
+    checkoutOpen()
+      ? "- Ordering is open. Every order is a practice order and waits for the buyer's email confirmation."
+      : "- Ordering is closed at the moment: quotes work, orders return CHECKOUT_CLOSED. Try again later.",
     `- Contact: ${SITE.email}, ${SITE.phoneIntl}`,
   );
 }

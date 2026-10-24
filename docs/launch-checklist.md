@@ -28,7 +28,7 @@ Tick each item on both phones.
 **AI**
 - [ ] Harta emoției: questionnaire chips are easy to tap; a reply arrives; "Adaugă în coș" fills the cart.
 - [ ] /agent-demo: the live log is readable; the order step shows "awaiting approval".
-- [ ] On 2 Nov after 09:30 only: /agent-demo places a real practice order.
+- [ ] With checkout open: /agent-demo places a real practice order.
 
 **Admin (team phone)**
 - [ ] "Deschide în admin" from an order email → login → lands on that order.
@@ -39,15 +39,30 @@ Tick each item on both phones.
 1. Production variables (Vercel → Settings → Environment Variables → Production):
    SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SMTP_USER, SMTP_PASS, OPENAI_API_KEY, and
    ADMIN_PASSWORD set to the **real** password (not the preview test password).
-   CHECKOUT_OPEN must NOT be set in Production (online orders open 2 Nov 09:30).
+   CHECKOUT_OPEN=true opens online ordering (website, agent API, MCP, /agent-demo); unset or any
+   other value keeps it closed. See "Open / close checkout" below.
 2. Merge `dev` into `main` (fast-forward). Vercel deploys production automatically.
 3. Smoke test on www.giftme.site: home, a box page, /cos/, /harta-emotiei/, /llms.txt,
    /catalog.json, /openapi.json, /.well-known/mcp.json, /confirma-prezenta/, /admin/ login.
 4. Rollback if anything is wrong: Vercel → Deployments → previous production → "Instant Rollback".
 
+## Open / close checkout
+
+One switch: the Production variable `CHECKOUT_OPEN` (exactly `true` = open; anything else = closed).
+Vercel reads variables at deploy time, so every change needs a redeploy (about 1 minute).
+
+- Close: Vercel → Settings → Environment Variables → `CHECKOUT_OPEN` (Production) → Edit → `false` → Save,
+  then Deployments → latest Production → ⋯ → Redeploy. Or in a terminal:
+  `vercel env rm CHECKOUT_OPEN production -y && echo false | vercel env add CHECKOUT_OPEN production && vercel redeploy https://www.giftme.site --target production`
+- Open again: the same with `true`.
+- Check: https://www.giftme.site/api/agent/order answers 403 CHECKOUT_CLOSED when closed;
+  /llms.txt says "Ordering is open" or "closed at the moment".
+
 ## 3. On 1 Nov (freeze day)
 
 1. Last tests on the preview.
-2. Delete the files in Supabase Storage → messages, then run `supabase/cleanup-before-launch.sql`.
+2. ⚠ Checkout is open since 24 Oct, so the database holds real customers' practice orders. Do NOT run
+   `supabase/cleanup-before-launch.sql` as is: it deletes every order and message. Delete only
+   recognised test orders, or skip the cleanup.
 3. After launch, keep Preview away from real data: create a second Supabase project for Preview
    (same migration) and point the Preview variables at it.

@@ -140,7 +140,7 @@ const ro = {
     practiceTitle: "Comandă de exercițiu",
     practiceText:
       "GiftMe! este o firmă de exercițiu (CEEF Chișinău). Comenzile de pe acest site sunt de exercițiu: nu se face nicio plată reală și nu se livrează bunuri reale.",
-    closed: "Comenzile online se deschid luni, 2 noiembrie 2026, la ora 09:30. Până atunci poți pregăti coșul.",
+    closed: "Comenzile online sunt închise momentan. Poți pregăti coșul și reveni puțin mai târziu.",
     add: "Adaugă în coș",
     added: "Adăugat în coș",
     viewCart: "Vezi coșul",
@@ -493,7 +493,7 @@ const en: Dict = {
     practiceTitle: "Practice-company order",
     practiceText:
       "GiftMe! is a student practice company (CEEF Chișinău). Orders on this site are practice orders: no real payment is made and no real goods are delivered.",
-    closed: "Online orders open on Monday, 2 November 2026, at 9:30. You can prepare your cart until then.",
+    closed: "Online orders are closed at the moment. You can prepare your cart and come back a little later.",
     add: "Add to cart",
     added: "Added to cart",
     viewCart: "View cart",

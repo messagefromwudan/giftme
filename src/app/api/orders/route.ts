@@ -1,5 +1,5 @@
 import { after } from "next/server";
-import { checkoutOpen, createOrder, patchOrder } from "@/lib/orders";
+import { CHECKOUT_CLOSED_MESSAGE, checkoutOpen, createOrder, patchOrder } from "@/lib/orders";
 import { sendOrderEmails } from "@/lib/emails";
 import { clientIp, LIMITS, rateLimit } from "@/lib/ratelimit";
 import { errorResponse, json, publicOrder, readJson, tooMany } from "@/lib/http";
@@ -9,7 +9,7 @@ const MIN_FILL_MS = 4000;
 // Website checkout. Orders from AI agents go through /api/agent/order and need human approval.
 export async function POST(req: Request) {
   try {
-    if (!checkoutOpen()) return json({ error: "CHECKOUT_CLOSED", message: "Online orders open on 2 November 2026" }, 403);
+    if (!checkoutOpen()) return json({ error: "CHECKOUT_CLOSED", message: CHECKOUT_CLOSED_MESSAGE }, 403);
     const wait = await rateLimit(LIMITS.order, clientIp(req.headers));
     if (wait) return tooMany(wait);
 

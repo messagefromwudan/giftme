@@ -12,7 +12,7 @@ import {
   type Box,
   type Locale,
 } from "./catalog";
-import { checkoutOpen, CHECKOUT_OPENS_AT, createOrder, deliveryDateBounds, findOrderForCustomer, patchOrder, priceOrder, type OrderSource } from "./orders";
+import { checkoutOpen, createOrder, deliveryDateBounds, findOrderForCustomer, patchOrder, priceOrder, type OrderSource } from "./orders";
 import { sendOrderEmails, trackUrl } from "./emails";
 import { publicOrder } from "./http";
 
@@ -153,7 +153,6 @@ export async function agentQuote(input: z.input<typeof quoteInput>) {
       quote.customGiftPending ? "Total excludes the YOUR BOX gift, which a human quotes after the order." : null,
     ].filter(Boolean),
     checkout_open: checkoutOpen(),
-    checkout_opens_at: CHECKOUT_OPENS_AT,
     delivery_dates: deliveryDateBounds(),
     notice: PRACTICE_NOTICE.en,
   };
@@ -247,7 +246,7 @@ export function catalogDocument() {
       notes: "Practice orders: no real payment. For bank transfer the team emails payment details after confirmation.",
     },
     ordering: {
-      checkout_opens_at: CHECKOUT_OPENS_AT,
+      checkout_open: checkoutOpen(),
       human_approval_required_for_agent_orders: true,
       quote_endpoint: `${SITE.url}/api/agent/quote`,
       order_endpoint: `${SITE.url}/api/agent/order`,

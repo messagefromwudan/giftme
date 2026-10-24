@@ -1,7 +1,8 @@
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 import { MemoryDb, SupabaseDb, setDb, type Db } from "./db";
 import {
+  checkoutOpen,
   confirmOrder,
   createOrder,
   deliveryDateBounds,
@@ -43,6 +44,24 @@ afterAll(async () => {
   await supabaseClient.from("discount_codes").delete().like("owner_email", like);
   await supabaseClient.from("discount_codes").delete().like("source_order_id", `TEST-${run}%`);
   await supabaseClient.from("referral_credits").delete().like("email", like);
+});
+
+describe("checkout switch", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("is open only when CHECKOUT_OPEN is exactly true", () => {
+    vi.stubEnv("CHECKOUT_OPEN", "true");
+    expect(checkoutOpen()).toBe(true);
+    vi.stubEnv("CHECKOUT_OPEN", " true\n");
+    expect(checkoutOpen()).toBe(true);
+  });
+
+  it("is closed when CHECKOUT_OPEN is unset, false or anything else", () => {
+    for (const v of [undefined, "", "false", "TRUE", "1", "yes"]) {
+      vi.stubEnv("CHECKOUT_OPEN", v);
+      expect(checkoutOpen()).toBe(false);
+    }
+  });
 });
 
 describe.each(backends)("orders on %s", (_name, makeDb) => {
