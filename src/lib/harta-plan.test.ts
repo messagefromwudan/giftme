@@ -19,8 +19,14 @@ describe("Harta budget plan (budget = box price; delivery added at checkout)", (
     expect(budgetPlan(a("Profesor/ă", "550"))).toMatchObject({ kind: "box", box: { id: "GM-07" }, overBy: 0 });
   });
 
-  it("teacher, up to 450 → BOX PROFESOR is 80 MDL over (clearly out) and boxes fit: choose within", () => {
-    expect(budgetPlan(a("Profesor/ă", "450"))).toEqual({ kind: "choose", limit: 450 });
+  it("teacher, up to 450 → BOX PROFESOR, 80 MDL over (within the 100 MDL tolerance) and said so", () => {
+    const p = budgetPlan(a("Profesor/ă", "450"));
+    expect(p).toMatchObject({ kind: "box", box: { id: "GM-07" }, overBy: 80 });
+    if (p.kind === "box") expect(planText(p, "ro")).toContain("cu 80 MDL peste bugetul de 450 MDL");
+  });
+
+  it("partner, up to 450 → BOX ROMANCE is 130 MDL over and other boxes fit: choose within", () => {
+    expect(budgetPlan(a("Partener/ă", "450"))).toEqual({ kind: "choose", limit: 450 });
   });
 
   it("English answers map to the same boxes", () => {
@@ -107,5 +113,6 @@ describe("Harta price check and budgets typed in the chat", () => {
     const allowed = new Set([530, 440]);
     expect(budgetAwareUnknownAmounts("BOX PROFESOR costă 530 MDL, cu 130 MDL peste bugetul tău de 400 MDL.", allowed, budget)).toEqual([]);
     expect(budgetAwareUnknownAmounts("Azi BOX PROFESOR costă doar 400 MDL.", allowed, budget)).toEqual([400]);
+    expect(budgetAwareUnknownAmounts("E cu 130 MDL în plus față de cei 400 MDL.", allowed, budget)).toEqual([]);
   });
 });

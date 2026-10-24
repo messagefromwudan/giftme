@@ -48,7 +48,7 @@ const budgetLimit = (b: Answers["budget"]) => (b === "any" || b === "own" ? null
 // ---------------------------------------------------------------------------
 
 /** "Slightly over budget": the right box is proposed anyway, with the difference stated. */
-export const SLIGHTLY_OVER_MDL = 60;
+export const SLIGHTLY_OVER_MDL = 100;
 
 /** The box made for each "who" answer, in questionnaire order (Mamă sau tată has no dedicated box). */
 const WHO_BOX: (BoxId | null)[] = ["GM-01", "GM-02", null, "GM-07", "GM-03", "GM-06"];
@@ -349,8 +349,10 @@ export async function hartaReply(input: z.infer<typeof chatSchema>): Promise<Har
     }
     if (!text) return { text: finalProposal ? finalProposal.summary : fallbackText(lang), proposal: finalProposal };
     // Prices come only from the server: drop a reply that states an amount we did not produce.
-    if (budgetAwareUnknownAmounts(text, allowedAmounts, budgetAmounts(messages)).length > 0) {
-      console.warn("[harta] reply mentioned an amount not produced by the server; replaced");
+    const unknown = budgetAwareUnknownAmounts(text, allowedAmounts, budgetAmounts(messages));
+    if (unknown.length > 0) {
+      // Numbers only, never the conversation.
+      console.warn(`[harta] reply replaced: amounts ${unknown.join(", ")} not produced by the server`);
       return { text: safeText(lang, finalProposal), proposal: finalProposal };
     }
     return { text, proposal: finalProposal };
@@ -392,10 +394,12 @@ export function budgetAmounts(messages: { role: string; content: string }[]): Se
   return out;
 }
 
+const BUDGET_SENTENCE = /(buget|budget|peste|în plus|in plus|mai mult|diferen|over|more than|extra|above)/i;
+
 /** Like unknownAmounts, but a sentence about the budget may also use the customer's budget figures. */
 export function budgetAwareUnknownAmounts(text: string, allowed: Set<number>, budget: Set<number>): number[] {
   return text.split(/(?<=[.!?;])\s+|\n+/).flatMap((sentence) =>
-    unknownAmounts(sentence, /(buget|budget)/i.test(sentence) ? new Set([...allowed, ...budget]) : allowed),
+    unknownAmounts(sentence, BUDGET_SENTENCE.test(sentence) ? new Set([...allowed, ...budget]) : allowed),
   );
 }
 
