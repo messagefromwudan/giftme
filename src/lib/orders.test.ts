@@ -1,7 +1,14 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 import { MemoryDb, SupabaseDb, setDb, type Db } from "./db";
-import { confirmOrder, createOrder, deliveryDateBounds, findOrderForCustomer, OrderError } from "./orders";
+import {
+  confirmOrder,
+  createOrder,
+  deliveryDateBounds,
+  findOrderForApproval,
+  findOrderForCustomer,
+  OrderError,
+} from "./orders";
 import { createPassItOnCode, referralCredits } from "./codes";
 
 // Runs against the in-memory store, and also against a real Supabase database when
@@ -79,6 +86,11 @@ describe.each(backends)("orders on %s", (_name, makeDb) => {
     const { order } = await createOrder(input(), { source: "agent_api" });
     expect(order.status).toBe("awaiting_approval");
     expect(order.referralCode).toBeUndefined();
+    // The tracking token (which agents get) can never approve; only the emailed secret can.
+    expect(order.approvalToken).toBeTruthy();
+    expect(order.approvalToken).not.toBe(order.token);
+    expect(await findOrderForApproval(order.id, order.token)).toBeNull();
+    expect(await findOrderForApproval(order.id, order.approvalToken!)).not.toBeNull();
     const confirmed = await confirmOrder(order, "email-link");
     expect(confirmed.status).toBe("received");
   });

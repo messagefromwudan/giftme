@@ -7,6 +7,21 @@ import { STATUS_LABEL } from "./orders";
 export const json = (body: unknown, status = 200, headers: HeadersInit = {}) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store", ...headers } });
 
+/** Public agent endpoints may be called from any origin (no cookies are ever used there). */
+export const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Idempotency-Key, Mcp-Protocol-Version, Mcp-Session-Id, Accept",
+  "Access-Control-Max-Age": "86400",
+};
+
+export const preflight = () => new Response(null, { status: 204, headers: CORS });
+
+export function withCors(res: Response) {
+  for (const [k, v] of Object.entries(CORS)) res.headers.set(k, v);
+  return res;
+}
+
 export const tooMany = (retryAfter: number) =>
   json({ error: "RATE_LIMITED", message: "Too many requests, try again later" }, 429, {
     "Retry-After": String(retryAfter),

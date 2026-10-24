@@ -8,6 +8,11 @@ export const LIMITS = {
   order: { name: "order", max: 5, windowSec: 600 },
   track: { name: "track", max: 20, windowSec: 600 },
   adminLogin: { name: "admin-login", max: 8, windowSec: 900 },
+  agentQuote: { name: "agent-quote", max: 60, windowSec: 60 },
+  agentOrder: { name: "agent-order", max: 10, windowSec: 3600 },
+  /** Approval emails per buyer address, so agents can't flood someone's inbox. */
+  approvalEmail: { name: "approval-email", max: 3, windowSec: 3600 },
+  mcp: { name: "mcp", max: 120, windowSec: 60 },
 } satisfies Record<string, Limit>;
 
 /** Fixed-window counter. Returns seconds to wait when the limit is exceeded, else 0. */

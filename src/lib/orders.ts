@@ -107,8 +107,13 @@ export type GiftQuoteStatus = "awaiting_quote" | "quoted" | "paid" | "bought";
 
 export type Order = {
   id: string;
-  /** Secret for tracking/approval links. Never shown in lists or exports. */
+  /** Secret for tracking links (read-only). Never shown in lists or exports. */
   token: string;
+  /**
+   * Agent orders only: secret for the "confirm this order" link, sent ONLY to the buyer's inbox.
+   * Separate from `token` because agents receive the tracking token and must not self-approve.
+   */
+  approvalToken?: string;
   createdAt: string;
   updatedAt: string;
   lang: Locale;
@@ -173,6 +178,13 @@ export async function findOrderForCustomer(id: string, proof: { token?: string; 
   if (proof.token && safeEqual(proof.token, order.token)) return order;
   if (proof.email && normalizeEmail(proof.email) === order.buyer.email) return order;
   return null;
+}
+
+/** Approval: only the secret from the buyer's email works, never the tracking token. */
+export async function findOrderForApproval(id: string, approvalToken: string) {
+  const order = await getOrder(id);
+  if (!order?.approvalToken || !safeEqual(approvalToken, order.approvalToken)) return null;
+  return order;
 }
 
 function safeEqual(a: string, b: string) {
@@ -272,6 +284,7 @@ export async function createOrder(
   const order: Order = {
     id,
     token: randomBytes(18).toString("base64url"),
+    ...(needsApproval ? { approvalToken: randomBytes(24).toString("base64url") } : {}),
     createdAt,
     updatedAt: createdAt,
     lang: input.lang,

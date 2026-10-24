@@ -98,7 +98,8 @@ const T = {
 const siteUrl = () => process.env.SITE_URL || SITE.url;
 const langPrefix = (lang: Locale) => (lang === "en" ? "/en" : "");
 export const trackUrl = (o: Order) => `${siteUrl()}${langPrefix(o.lang)}/urmarire/?id=${o.id}&t=${o.token}`;
-export const approveUrl = (o: Order) => `${siteUrl()}${langPrefix(o.lang)}/confirma-comanda/?id=${o.id}&t=${o.token}`;
+export const approveUrl = (o: Order) =>
+  `${siteUrl()}${langPrefix(o.lang)}/confirma-comanda/?id=${o.id}&a=${o.approvalToken}`;
 
 function layout(body: string) {
   return `<!doctype html><html><body style="margin:0;background:#fbf6f1;font-family:Arial,Helvetica,sans-serif;color:#111">

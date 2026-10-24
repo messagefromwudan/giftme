@@ -80,6 +80,9 @@ const nextConfig: NextConfig = {
     return {
       beforeFiles: [
         { source: "/confirma-prezenta/", destination: "/confirma-prezenta/index.html" },
+        // Agent discovery documents.
+        { source: "/.well-known/ai-plugin.json", destination: "/api/well-known/ai-plugin" },
+        { source: "/.well-known/mcp.json", destination: "/api/well-known/mcp" },
       ],
     };
   },

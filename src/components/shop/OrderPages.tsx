@@ -212,18 +212,31 @@ export function Track({ lang }: { lang: Locale }) {
   );
 }
 
+async function approvalCall(body: object): Promise<{ order?: PublicOrder; already?: boolean; error?: string }> {
+  try {
+    const res = await fetch("/api/orders/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return await res.json();
+  } catch {
+    return { error: "NETWORK" };
+  }
+}
+
 export function Approve({ lang }: { lang: Locale }) {
   const t = getDict(lang).shop;
   const sp = useSearchParams();
   const id = sp.get("id") ?? "";
-  const token = sp.get("t") ?? "";
+  const approvalToken = sp.get("a") ?? "";
   const [order, setOrder] = useState<PublicOrder | null>(null);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let live = true;
-    fetchOrder({ id, token }).then((r) => {
+    approvalCall({ id, approvalToken, action: "view" }).then((r) => {
       if (!live) return;
       if (r.order) setOrder(r.order);
       else setMsg(t.notFound);
@@ -231,17 +244,12 @@ export function Approve({ lang }: { lang: Locale }) {
     return () => {
       live = false;
     };
-  }, [id, token, t.notFound]);
+  }, [id, approvalToken, t.notFound]);
 
   async function approve() {
     setBusy(true);
     try {
-      const res = await fetch("/api/orders/approve", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, token }),
-      });
-      const json = await res.json();
+      const json = await approvalCall({ id, approvalToken, action: "approve" });
       if (json.order) {
         setOrder(json.order);
         setMsg(json.already ? t.alreadyApproved : t.approved);
