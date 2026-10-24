@@ -63,7 +63,6 @@ Vercel reads variables at deploy time, so every change needs a redeploy (about 1
 
 1. Last tests on the preview.
 2. ⚠ Checkout is open since 24 Oct, so the database holds real customers' practice orders. Do NOT run
-   `supabase/cleanup-before-launch.sql` as is: it deletes every order and message. Delete only
-   recognised test orders, or skip the cleanup.
-3. After launch, keep Preview away from real data: create a second Supabase project for Preview
-   (same migration) and point the Preview variables at it.
+   `supabase/cleanup-before-launch.sql`: it deletes every order and message. Use
+   `supabase/cleanup-selected-orders.sql` (only the listed test orders; numbering unchanged).
+3. Preview has its own Supabase project (from 24 Oct), so tests no longer land in real data.

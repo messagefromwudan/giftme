@@ -1,3 +1,6 @@
+-- ⚠ DO NOT RUN. Since checkout opened on 24 Oct the database holds real practice orders, and this
+-- script deletes ALL of them. Use supabase/cleanup-selected-orders.sql instead.
+--
 -- GiftMe! — remove ALL test data before the launch (run once, on 1 Nov 2026, after the last test).
 -- Supabase → SQL Editor. Preview and Production share this database, so until launch every
 -- order in it is a test order. Run STEP 1 first and check the list before running STEP 2.
