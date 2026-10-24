@@ -8,6 +8,8 @@ built so that people *and* their AI agents can browse the catalog and order.
 - Next.js 16 (App Router, Cache Components) + TypeScript + Tailwind CSS 4, hosted on Vercel (project `giftme`).
 - `src/lib/catalog.ts` is the **single source of truth** for boxes, prices, offers and delivery rules.
 - `src/lib/pricing.ts` is the **only** place where offers and delivery are computed (server-side, unit-tested).
+- `src/lib/db.ts` is the **only** module that talks to storage: Supabase Postgres + a private Storage
+  bucket, used from the server with the service-role key. Schema: `supabase/migrations/`.
 - Romanian at `/`, English at `/en/` (see `src/proxy.ts`). Texts live in `src/i18n/index.ts`.
 - `public/confirma-prezenta/` is the static launch RSVP page (Google Apps Script backend in `apps-script/`).
   Do not change it before the 2 Nov 2026 event.
@@ -17,7 +19,8 @@ built so that people *and* their AI agents can browse the catalog and order.
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm test           # pricing unit tests
+npm test           # unit tests (pricing + orders, in-memory store)
+TEST_SUPABASE=1 SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npm test   # also against a real database
 npm run lint
 npm run build && npm start   # production build
 ```
@@ -41,13 +44,22 @@ kept in memory and emails are printed to the console.
 
 | Variable | Required | Used for |
 | --- | --- | --- |
-| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | for orders | Upstash Redis (Vercel Marketplace → Storage). Without it, ordering returns "temporarily unavailable" on Vercel. |
+| `SUPABASE_URL` | for orders | Supabase project URL, e.g. `https://abcd.supabase.co`. |
+| `SUPABASE_SERVICE_ROLE_KEY` | for orders | Supabase **service-role** (secret) key. Server only: never prefix with `NEXT_PUBLIC_`. Without these two, ordering returns "temporarily unavailable" on Vercel. |
 | `ADMIN_PASSWORD` | for admin | Admin dashboard at `/admin/` (min. 10 characters). Changing it logs everyone out. |
 | `SMTP_USER`, `SMTP_PASS` | for emails | Gmail account `fe.giftme@gmail.com` + a Gmail **app password** (Google Account → Security → 2-Step Verification → App passwords). |
 | `CHECKOUT_OPEN` | optional | `true` / `false` overrides the launch time (online orders open 2 Nov 2026, 09:30). Use `true` on Preview for testing. |
 | `ORDER_NOTIFY_TO` | optional | Where new-order emails go (default `fe.giftme@gmail.com`). |
 | `SITE_URL` | optional | Base URL in emails (default `https://www.giftme.site`). |
 | `ANTHROPIC_API_KEY` | later | On-site agent "Harta emoției". |
+
+## Database (Supabase)
+
+1. Run `supabase/migrations/20261024120000_giftme_init.sql` once in Supabase → SQL Editor.
+2. Every table has row-level security **on** and **no policies**; the `anon` and `authenticated`
+   roles have no privileges. Only the server (service-role key) can read or write.
+3. Audio/video messages go to the private `messages` bucket (created by the migration) and are
+   only ever served through short-lived signed URLs.
 
 ## Orders
 

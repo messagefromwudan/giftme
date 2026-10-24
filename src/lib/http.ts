@@ -1,7 +1,7 @@
 import "server-only";
 import { QuoteError } from "./pricing";
 import { OrderError, type Order } from "./orders";
-import { StoreUnavailableError } from "./store";
+import { StoreUnavailableError } from "./db";
 import { STATUS_LABEL } from "./orders";
 
 export const json = (body: unknown, status = 200, headers: HeadersInit = {}) =>

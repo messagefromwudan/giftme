@@ -1,5 +1,5 @@
 import "server-only";
-import { kv, StoreUnavailableError } from "./store";
+import { db, StoreUnavailableError } from "./db";
 
 export type Limit = { name: string; max: number; windowSec: number };
 
@@ -13,16 +13,15 @@ export const LIMITS = {
 /** Fixed-window counter. Returns seconds to wait when the limit is exceeded, else 0. */
 export async function rateLimit(limit: Limit, id: string): Promise<number> {
   const window = Math.floor(Date.now() / 1000 / limit.windowSec);
-  const key = `rl:${limit.name}:${id}:${window}`;
+  const key = `${limit.name}:${id.slice(0, 64)}:${window}`;
   let n: number;
   try {
-    n = await kv().incr(key);
+    n = await db().rateHit(key, limit.windowSec);
   } catch (e) {
     // No storage: fail open (anything that writes data fails on its own without storage).
     if (e instanceof StoreUnavailableError) return 0;
     throw e;
   }
-  if (n === 1) await kv().expire(key, limit.windowSec);
   if (n > limit.max) return limit.windowSec - (Math.floor(Date.now() / 1000) % limit.windowSec);
   return 0;
 }

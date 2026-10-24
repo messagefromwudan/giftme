@@ -2,14 +2,16 @@ import type { NextConfig } from "next";
 
 // script.google.com: the launch RSVP form posts to Google Apps Script.
 // fonts.googleapis.com / gstatic: the RSVP page loads its own Google Fonts.
+// Supabase: browsers upload QR messages and play them through short-lived signed URLs.
+const supabase = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).origin : "";
 const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob:",
-  "media-src 'self' blob:",
-  "connect-src 'self' https://script.google.com https://script.googleusercontent.com https://va.vercel-scripts.com",
+  `media-src 'self' blob: ${supabase}`.trim(),
+  `connect-src 'self' https://script.google.com https://script.googleusercontent.com https://va.vercel-scripts.com ${supabase}`.trim(),
   "form-action 'self' https://script.google.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",

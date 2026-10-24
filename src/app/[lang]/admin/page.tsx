@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { listOrders } from "@/lib/orders";
 import { ORDER_STATUSES, type OrderStatus } from "@/lib/status";
-import { storeConfigured } from "@/lib/store";
+import { dbConfigured } from "@/lib/db";
 import { AdminGate, StatusBadge, adminLabel, chisinauTime } from "./ui";
 
 export const metadata: Metadata = { title: "Admin", robots: { index: false, follow: false } };
@@ -30,7 +30,7 @@ async function Orders({ searchParams }: { searchParams: PageProps<"/[lang]/admin
 
   return (
     <div className="space-y-6">
-      {!storeConfigured() && (
+      {!dbConfigured() && (
         <p className="rounded-2xl bg-yellow-100 p-4 text-sm">
           Baza de date nu este conectată: comenzile sunt ținute doar în memorie (doar pentru test local).
         </p>

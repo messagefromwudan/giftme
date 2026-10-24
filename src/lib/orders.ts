@@ -13,7 +13,7 @@ import {
   spendReferralCredit,
   type CodeRecord,
 } from "./codes";
-import { kv, StoreUnavailableError } from "./store";
+import { db, StoreUnavailableError } from "./db";
 import type { OrderStatus } from "./status";
 
 export { STATUS_LABEL, type OrderStatus } from "./status";
@@ -150,21 +150,20 @@ export class OrderError extends Error {
 }
 
 const now = () => new Date().toISOString();
-const ORDERS_INDEX = "orders:index";
 
 export async function getOrder(id: string) {
-  return kv().get<Order>(`order:${id.trim().toUpperCase()}`);
+  const norm = id.trim().toUpperCase();
+  if (!/^GM-\d{1,9}$/.test(norm)) return null;
+  return db().getOrder(norm);
 }
 
 async function saveOrder(order: Order) {
   order.updatedAt = now();
-  await kv().set(`order:${order.id}`, order);
+  await db().saveOrder(order);
 }
 
 export async function listOrders(limit = 500): Promise<Order[]> {
-  const ids = await kv().zrevrange(ORDERS_INDEX, 0, limit - 1);
-  const orders = await Promise.all(ids.map((id) => getOrder(id)));
-  return orders.filter((o): o is Order => Boolean(o));
+  return db().listOrders(limit);
 }
 
 /** Tracking: either the secret token from the link, or order number + buyer email. */
@@ -240,9 +239,9 @@ export async function createOrder(
   }
 
   // Idempotency: the same key always returns the same order.
-  const idemKey = opts.idempotencyKey ? `idem:${opts.idempotencyKey.slice(0, 100)}` : undefined;
+  const idemKey = opts.idempotencyKey ? opts.idempotencyKey.slice(0, 100) : undefined;
   if (idemKey) {
-    const existingId = await kv().get<string>(idemKey);
+    const existingId = await db().idempotentOrderId(idemKey);
     if (existingId) {
       const existing = await getOrder(existingId);
       if (existing) return { order: existing, replayed: true };
@@ -256,12 +255,15 @@ export async function createOrder(
     email: input.buyer.email,
   });
 
-  const seq = await kv().incr("seq:order");
-  const id = `GM-${1000 + seq}`;
-  if (idemKey && !(await kv().set(idemKey, id, { ex: 86_400, nx: true }))) {
-    // A concurrent request with the same key won the race; return its order.
-    const winner = await getOrder((await kv().get<string>(idemKey))!);
-    if (winner) return { order: winner, replayed: true };
+  const id = await db().nextOrderId();
+  if (idemKey) {
+    const owner = await db().claimIdempotencyKey(idemKey, id);
+    if (owner !== id) {
+      // A concurrent request with the same key won the race; return its order.
+      const winner = await getOrder(owner);
+      if (winner) return { order: winner, replayed: true };
+      throw new OrderError("IN_PROGRESS", "The same order is already being placed; retry in a moment");
+    }
   }
 
   const needsApproval = opts.source !== "web";
@@ -289,9 +291,7 @@ export async function createOrder(
     emails: {},
   };
 
-  await saveOrder(order);
-  await kv().zadd(ORDERS_INDEX, Date.parse(createdAt), id);
-  await kv().sadd(`orders:byEmail:${order.buyer.email}`, id);
+  await db().insertOrder(order);
 
   // Orders placed by AI agents wait for the human to approve them by email.
   if (!needsApproval) await confirmOrder(order, "web");
