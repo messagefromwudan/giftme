@@ -38,6 +38,11 @@ export interface Db {
   /** Fixed-window counter; returns the hit count in the current window. */
   rateHit(key: string, windowSec: number): Promise<number>;
 
+  /** Cheap query that counts as activity (keeps a free Supabase project from pausing). */
+  ping(): Promise<void>;
+  /** Deletes expired rate-limit windows and idempotency keys older than 24 h. */
+  cleanup(): Promise<{ rateLimits: number; idempotencyKeys: number }>;
+
   /** Private bucket for audio/video messages. */
   media: {
     uploadUrl(path: string): Promise<{ signedUrl: string; token: string; path: string }>;
@@ -252,6 +257,27 @@ export class SupabaseDb implements Db {
     return check("rate hit", await this.sb.rpc("giftme_rate_hit", { p_key: key, p_window_seconds: windowSec })) as number;
   }
 
+  async ping() {
+    check("ping", await this.sb.from("orders").select("id", { head: true, count: "exact" }).limit(1));
+  }
+
+  async cleanup() {
+    const now = new Date().toISOString();
+    const rl = check(
+      "cleanup rate limits",
+      await this.sb.from("rate_limits").delete({ count: "exact" }).lt("expires_at", now).select("key"),
+    );
+    const ik = check(
+      "cleanup idempotency keys",
+      await this.sb
+        .from("idempotency_keys")
+        .delete({ count: "exact" })
+        .lt("created_at", new Date(Date.now() - DAY_MS).toISOString())
+        .select("key"),
+    );
+    return { rateLimits: rl?.length ?? 0, idempotencyKeys: ik?.length ?? 0 };
+  }
+
   media = {
     uploadUrl: async (path: string) =>
       check("media upload url", await this.sb.storage.from(MEDIA_BUCKET).createSignedUploadUrl(path))!,
@@ -358,6 +384,15 @@ export class MemoryDb implements Db {
       return 1;
     }
     return ++e.hits;
+  }
+  async ping() {}
+  async cleanup() {
+    const now = Date.now();
+    let rateLimits = 0;
+    let idempotencyKeys = 0;
+    for (const [k, v] of this.rate) if (v.exp < now && this.rate.delete(k)) rateLimits++;
+    for (const [k, v] of this.idem) if (now - v.at >= DAY_MS && this.idem.delete(k)) idempotencyKeys++;
+    return { rateLimits, idempotencyKeys };
   }
   media = {
     uploadUrl: async (): Promise<{ signedUrl: string; token: string; path: string }> => {
