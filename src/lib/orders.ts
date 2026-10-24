@@ -13,7 +13,7 @@ import {
   spendReferralCredit,
   type CodeRecord,
 } from "./codes";
-import { kv } from "./store";
+import { kv, StoreUnavailableError } from "./store";
 import type { OrderStatus } from "./status";
 
 export { STATUS_LABEL, type OrderStatus } from "./status";
@@ -199,12 +199,19 @@ export async function priceOrder(
 ): Promise<PricedOrder> {
   let codeRecord: CodeRecord | undefined;
   let code: Order["code"];
-  if (input.code) {
-    const check = await checkCode(input.code, input.email ?? "", new Date(), excludeOrderId);
-    if (check.ok) codeRecord = check.record;
-    else code = { code: input.code, applied: false, rejected: check.reason };
+  let credit = false;
+  try {
+    if (input.code) {
+      const check = await checkCode(input.code, input.email ?? "", new Date(), excludeOrderId);
+      if (check.ok) codeRecord = check.record;
+      else code = { code: input.code, applied: false, rejected: check.reason };
+    }
+    credit = input.email ? (await referralCredits(input.email)) > 0 : false;
+  } catch (e) {
+    // Without storage the cart can still be priced; codes and credits just can't be checked.
+    if (!(e instanceof StoreUnavailableError)) throw e;
+    if (input.code) code = { code: input.code, applied: false, rejected: "unavailable" };
   }
-  const credit = input.email ? (await referralCredits(input.email)) > 0 : false;
   const q = quote({
     items: input.items,
     zone: input.zone,

@@ -35,17 +35,29 @@ Production should only be deployed from a clean, tested `main`.
 
 ## Environment variables
 
-None are required yet. They are added in Vercel (Project → Settings → Environment Variables), never in git.
-Planned:
+Set in Vercel (Project → Settings → Environment Variables, mark secrets **Sensitive**), never in git.
+See `.env.example` for local development. Everything runs locally without any of them: orders are
+kept in memory and emails are printed to the console.
 
-| Variable | Used for |
-| --- | --- |
-| `ANTHROPIC_API_KEY` | On-site agent "Harta emoției" |
-| `ADMIN_PASSWORD` | Admin dashboard |
-| `DATABASE_URL` | Orders, messages, codes (Neon Postgres via Vercel Marketplace) |
-| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Rate limiting (Upstash Redis via Vercel Marketplace) |
-| `BLOB_READ_WRITE_TOKEN` | Private audio/video messages (Vercel Blob) |
-| `RESEND_API_KEY` or `SMTP_USER` / `SMTP_PASS` | Order and status emails |
+| Variable | Required | Used for |
+| --- | --- | --- |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | for orders | Upstash Redis (Vercel Marketplace → Storage). Without it, ordering returns "temporarily unavailable" on Vercel. |
+| `ADMIN_PASSWORD` | for admin | Admin dashboard at `/admin/` (min. 10 characters). Changing it logs everyone out. |
+| `SMTP_USER`, `SMTP_PASS` | for emails | Gmail account `fe.giftme@gmail.com` + a Gmail **app password** (Google Account → Security → 2-Step Verification → App passwords). |
+| `CHECKOUT_OPEN` | optional | `true` / `false` overrides the launch time (online orders open 2 Nov 2026, 09:30). Use `true` on Preview for testing. |
+| `ORDER_NOTIFY_TO` | optional | Where new-order emails go (default `fe.giftme@gmail.com`). |
+| `SITE_URL` | optional | Base URL in emails (default `https://www.giftme.site`). |
+| `ANTHROPIC_API_KEY` | later | On-site agent "Harta emoției". |
+
+## Orders
+
+- Every order is a **comandă de exercițiu** (practice-company order): no real payment or delivery.
+- Website orders start as **Primită**; orders placed by AI agents start as **Așteaptă confirmarea clientului**
+  and only move on when the buyer presses "Confirm" on the link we email them.
+- Admin (`/admin/`): change status (emails the customer), quote GM-09 gifts (above 5,000 MDL the
+  coordinator must approve in writing before "bought"), export CSV/XLSX for accounting.
+- Anti-abuse: honeypot field, minimum time on the form, per-IP rate limits, idempotency keys,
+  server-side validation of every field. Customer text is stored and shown as data only.
 
 ## Content rules
 

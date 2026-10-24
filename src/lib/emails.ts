@@ -154,6 +154,17 @@ export function approvalRequest(o: Order) {
   return { subject: t.approveSubject(o.id), html: layout(body) };
 }
 
+export function giftQuote(o: Order) {
+  const amount = o.customGift?.amount ?? 0;
+  const ro = o.lang === "ro";
+  const body = `${notice(o.lang)}<h1 style="font-size:22px">${ro ? "Cotația cadoului tău" : "Your gift quote"} · ${o.id}</h1>
+<p>${ro ? "Cadoul ales" : "Your chosen gift"}: <strong>${esc(o.customGift?.idea ?? "")}</strong></p>
+<p style="font-size:20px"><strong>${amount} MDL</strong> ${ro ? "(fără alte taxe)" : "(no extra fees)"}</p>
+<p>${ro ? "Cumpărăm cadoul doar după ce confirmi plata. Îți trimitem detaliile de plată prin email; răspunde la acest mesaj dacă ai întrebări sau vrei să anulezi (gratuit, înainte de cumpărare)." : "We buy the gift only after you confirm payment. We'll email you the payment details; reply to this message with questions, or to cancel (free, before the gift is bought)."}</p>
+${btn(trackUrl(o), T[o.lang].track)}`;
+  return { subject: `${o.id}: ${ro ? "cotația cadoului" : "gift quote"} ${amount} MDL`, html: layout(body) };
+}
+
 export function statusUpdate(o: Order) {
   const t = T[o.lang];
   const label = STATUS_LABEL[o.status][o.lang];

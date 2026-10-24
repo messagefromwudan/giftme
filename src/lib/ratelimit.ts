@@ -1,5 +1,5 @@
 import "server-only";
-import { kv } from "./store";
+import { kv, StoreUnavailableError } from "./store";
 
 export type Limit = { name: string; max: number; windowSec: number };
 
@@ -14,7 +14,14 @@ export const LIMITS = {
 export async function rateLimit(limit: Limit, id: string): Promise<number> {
   const window = Math.floor(Date.now() / 1000 / limit.windowSec);
   const key = `rl:${limit.name}:${id}:${window}`;
-  const n = await kv().incr(key);
+  let n: number;
+  try {
+    n = await kv().incr(key);
+  } catch (e) {
+    // No storage: fail open (anything that writes data fails on its own without storage).
+    if (e instanceof StoreUnavailableError) return 0;
+    throw e;
+  }
   if (n === 1) await kv().expire(key, limit.windowSec);
   if (n > limit.max) return limit.windowSec - (Math.floor(Date.now() / 1000) % limit.windowSec);
   return 0;
