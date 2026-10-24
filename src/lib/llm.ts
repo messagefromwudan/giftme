@@ -30,16 +30,22 @@ export type RunOptions = {
   timeoutMs?: number;
   /** Label for the usage log line. */
   tag?: string;
+  /** Which feature is calling: "chat" (the widget's free questions) may use its own model. */
+  feature?: LlmFeature;
+  /** Exact model for this run (model comparison on previews); overrides the env settings. */
+  model?: string;
 };
 
+export type LlmFeature = "default" | "chat";
+
 export type Usage = { inputTokens: number; cachedInputTokens: number; outputTokens: number; calls: number };
-export type RunResult = { texts: string[]; refused: boolean; usage: Usage };
+export type RunResult = { texts: string[]; refused: boolean; usage: Usage; model?: string };
 
 const emptyUsage = (): Usage => ({ inputTokens: 0, cachedInputTokens: 0, outputTokens: 0, calls: 0 });
 
 /** Token counts only (never content), for cost tracking in the Vercel logs. */
-function logUsage(tag: string | undefined, usage: Usage) {
-  const { provider, model } = llmInfo();
+function logUsage(tag: string | undefined, usage: Usage, model: string) {
+  const { provider } = llmInfo();
   console.info(`[llm-usage] ${tag ?? "run"} ${provider}/${model} calls=${usage.calls} in=${usage.inputTokens} cached=${usage.cachedInputTokens} out=${usage.outputTokens}`);
 }
 
@@ -57,10 +63,24 @@ const provider = (): Provider => (process.env.LLM_PROVIDER === "anthropic" ? "an
 export const OPENAI_DEFAULT_MODEL = "gpt-6-astra";
 const ANTHROPIC_DEFAULT_MODEL = "claude-opus-5-5";
 
-export function llmInfo() {
+/** OPENAI_MODEL for everything; OPENAI_MODEL_CHAT, when set, only for the chat widget's free questions. */
+export function llmInfo(feature: LlmFeature = "default") {
+  const openaiModel = (feature === "chat" && process.env.OPENAI_MODEL_CHAT) || process.env.OPENAI_MODEL || OPENAI_DEFAULT_MODEL;
   return provider() === "anthropic"
     ? { provider: "anthropic" as const, processor: "Anthropic", model: process.env.ANTHROPIC_MODEL || ANTHROPIC_DEFAULT_MODEL }
-    : { provider: "openai" as const, processor: "OpenAI", model: process.env.OPENAI_MODEL || OPENAI_DEFAULT_MODEL };
+    : { provider: "openai" as const, processor: "OpenAI", model: openaiModel };
+}
+
+/** The gpt-4 and gpt-3.5 families have no reasoning settings and reject them. */
+export const openaiSupportsReasoning = (model: string) => !/^gpt-(4|3\.5)/.test(model);
+
+/** Model ids the configured OpenAI key can use (model comparison on previews only). */
+export async function listOpenAIModels(): Promise<string[]> {
+  if (!process.env.OPENAI_API_KEY) throw new LlmUnavailableError("No API key configured");
+  const client = new OpenAI({ maxRetries: 1, timeout: 15_000 });
+  const ids: string[] = [];
+  for await (const m of client.models.list()) ids.push(m.id);
+  return ids.sort();
 }
 
 export function llmConfigured(): boolean {
@@ -69,9 +89,10 @@ export function llmConfigured(): boolean {
 
 export async function runToolAgent(opts: RunOptions): Promise<RunResult> {
   if (!llmConfigured()) throw new LlmUnavailableError("No API key configured");
-  const result = await (provider() === "anthropic" ? runAnthropic(opts) : runOpenAI(opts));
-  logUsage(opts.tag, result.usage);
-  return result;
+  const model = opts.model ?? llmInfo(opts.feature).model;
+  const result = await (provider() === "anthropic" ? runAnthropic(opts) : runOpenAI(opts, model));
+  logUsage(opts.tag, result.usage, model);
+  return { ...result, model };
 }
 
 async function execSafely(execute: ToolExecutor, name: string, rawArgs: string | unknown) {
@@ -92,9 +113,9 @@ async function execSafely(execute: ToolExecutor, name: string, rawArgs: string |
 // OpenAI (Responses API)
 // ---------------------------------------------------------------------------
 
-async function runOpenAI(opts: RunOptions): Promise<RunResult> {
+async function runOpenAI(opts: RunOptions, model: string): Promise<RunResult> {
   const client = new OpenAI({ maxRetries: 1, timeout: opts.timeoutMs ?? 45_000 });
-  const model = llmInfo().model;
+  const reasoning = openaiSupportsReasoning(model);
   const tools: OpenAI.Responses.FunctionTool[] = opts.tools.map((t) => ({
     type: "function",
     name: t.name,
@@ -114,11 +135,11 @@ async function runOpenAI(opts: RunOptions): Promise<RunResult> {
         instructions: opts.system,
         input,
         tools,
-        reasoning: { effort: opts.effort },
+        ...(reasoning ? { reasoning: { effort: opts.effort } } : {}),
         max_output_tokens: opts.maxOutputTokens,
         // Conversations are not kept by OpenAI for later retrieval; reasoning is passed back encrypted.
         store: false,
-        include: ["reasoning.encrypted_content"],
+        ...(reasoning ? { include: ["reasoning.encrypted_content" as const] } : {}),
       });
     } catch (e) {
       throw new LlmUnavailableError(e instanceof OpenAI.APIError ? `${e.status ?? ""} ${e.message}` : (e as Error).message);

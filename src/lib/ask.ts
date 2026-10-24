@@ -6,7 +6,7 @@ import { PRACTICE_NOTICE } from "./agent";
 import { PRIVACY, TERMS, legalText } from "./legal";
 import { getDict, href } from "@/i18n";
 import { unknownAmounts } from "./harta";
-import { llmConfigured, LlmUnavailableError, runToolAgent, type LlmTool } from "./llm";
+import { llmConfigured, LlmUnavailableError, runToolAgent, type LlmTool, type Usage } from "./llm";
 import { CONTACT, noAnswerText } from "./site-faq";
 
 // "Întrebări despre GiftMe": free questions in the site-wide chat widget. The model answers only
@@ -29,7 +29,18 @@ export const askSchema = z.object({
 export type AskInput = z.infer<typeof askSchema>;
 
 export type AskFallback = "no_key" | "api_error" | "budget" | "refusal";
-export type AskReply = { text: string; fallback?: AskFallback };
+export type AskReply = {
+  text: string;
+  fallback?: AskFallback;
+  /** Why the model's reply was swapped for a safe one (guard name), if it was. */
+  replaced?: "no_answer" | "guard";
+  /** Server-side only (model comparison on previews); the route strips these otherwise. */
+  usage?: Usage;
+  model?: string;
+  /** The model's own words when they were replaced, and why. */
+  original?: string;
+  problems?: string[];
+};
 
 // ---------------------------------------------------------------------------
 // Knowledge: everything the site publishes, as plain text
@@ -198,7 +209,7 @@ const guardText = (lang: Locale) =>
 // The reply
 // ---------------------------------------------------------------------------
 
-export async function askReply(input: AskInput): Promise<AskReply> {
+export async function askReply(input: AskInput, opts: { model?: string } = {}): Promise<AskReply> {
   const { lang } = input;
   if (!llmConfigured()) return { text: fallbackIntro(lang), fallback: "no_key" };
 
@@ -220,15 +231,18 @@ export async function askReply(input: AskInput): Promise<AskReply> {
       maxOutputTokens: 1500,
       effort: "low",
       tag: "ask",
+      feature: "chat",
+      model: opts.model,
       execute: async (name, args) => {
         const out = runTool(name, args);
         collectNumbers(out.result, quoted);
         return { result: out.result, isError: out.error };
       },
     });
-    if (run.refused) return { text: noAnswerText(lang), fallback: "refusal" };
+    const meta = { usage: run.usage, model: run.model };
+    if (run.refused) return { text: noAnswerText(lang), fallback: "refusal", ...meta };
     const text = run.texts.join("\n\n").replace(/\*\*|__/g, "").replace(/^#+\s*/gm, "").trim();
-    if (!text || text.includes(NO_ANSWER)) return { text: noAnswerText(lang) };
+    if (!text || text.includes(NO_ANSWER)) return { text: noAnswerText(lang), replaced: "no_answer", original: text, ...meta };
     for (const n of quoted) allowedAmounts.add(n);
     const problems = [
       ...unknownAmounts(text, allowedAmounts).map((n) => `amount ${n}`),
@@ -238,9 +252,9 @@ export async function askReply(input: AskInput): Promise<AskReply> {
     if (problems.length > 0) {
       // Numbers only, never the conversation.
       console.warn(`[ask] reply replaced: ${problems.join(", ")} not in the sources`);
-      return { text: guardText(lang) };
+      return { text: guardText(lang), replaced: "guard", original: text, problems, ...meta };
     }
-    return { text };
+    return { text, ...meta };
   } catch (e) {
     if (!(e instanceof LlmUnavailableError)) throw e;
     console.error("[ask] model unavailable:", e.message);
