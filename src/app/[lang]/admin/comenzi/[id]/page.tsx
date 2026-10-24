@@ -4,7 +4,8 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { RULES } from "@/lib/catalog";
 import { getOrder, type Order } from "@/lib/orders";
-import { trackUrl } from "@/lib/emails";
+import { recordUrl, trackUrl } from "@/lib/emails";
+import { currentMessage, messageUrl, qrSvg } from "@/lib/messages";
 import { ORDER_STATUSES } from "@/lib/status";
 import { changeStatus, giftStep, quoteGift } from "../../actions";
 import { AdminGate, StatusBadge, adminLabel, chisinauTime } from "../../ui";
@@ -119,6 +120,8 @@ async function Detail({ params }: { params: PageProps<"/[lang]/admin/comenzi/[id
           <Rows rows={Object.entries(o.emails).map(([k, v]) => [`Email ${k}`, v ?? ""])} />
         </Card>
 
+        <MessageCard o={o} />
+
         {o.customGift && <GiftCard o={o} />}
 
         <Card title="Istoric">
@@ -133,6 +136,40 @@ async function Detail({ params }: { params: PageProps<"/[lang]/admin/comenzi/[id
         </Card>
       </div>
     </div>
+  );
+}
+
+async function MessageCard({ o }: { o: Order }) {
+  const m = await currentMessage(o.id);
+  if (!m) {
+    return (
+      <Card title="Mesaj QR">
+        <p className="text-sm">Clientul nu a înregistrat încă mesajul.</p>
+        <p className="mt-2 break-all text-xs text-muted">
+          Link pentru client: <a className="underline" href={recordUrl(o)}>{recordUrl(o)}</a>
+        </p>
+      </Card>
+    );
+  }
+  const url = messageUrl(m.id);
+  const svg = await qrSvg(url);
+  return (
+    <Card title="Mesaj QR (de tipărit pe cutie)">
+      <div className="flex flex-wrap items-start gap-4">
+        <div className="w-40 rounded-xl bg-white p-2 ring-1 ring-black/10" role="img" aria-label="Cod QR" dangerouslySetInnerHTML={{ __html: svg }} />
+        <Rows
+          rows={[
+            ["Tip", m.kind],
+            ["Creat", chisinauTime(m.createdAt)],
+            ["Cod PASS-IT-ON", m.passCode ? `${m.passCode} (dezvăluit ${chisinauTime(m.revealedAt!)})` : "nedezvăluit"],
+            ["Se șterge", m.deleteAfter ? chisinauTime(m.deleteAfter) : "la 30 de zile după dezvăluire"],
+          ]}
+        />
+      </div>
+      <p className="mt-3 break-all text-xs text-muted">
+        <a className="underline" href={url} target="_blank">{url}</a>
+      </p>
+    </Card>
   );
 }
 

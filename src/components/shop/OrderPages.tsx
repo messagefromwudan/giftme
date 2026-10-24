@@ -45,8 +45,9 @@ const fmt = (iso: string, lang: Locale) =>
     timeZone: "Europe/Chisinau",
   }).format(new Date(iso));
 
-export function OrderCard({ lang, order }: { lang: Locale; order: PublicOrder }) {
+export function OrderCard({ lang, order, token }: { lang: Locale; order: PublicOrder; token?: string }) {
   const t = getDict(lang).shop;
+  const canRecord = token && order.status !== "awaiting_approval" && order.status !== "cancelled";
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
       <div className="space-y-5 rounded-3xl p-6 ring-1 ring-black/10">
@@ -87,6 +88,11 @@ export function OrderCard({ lang, order }: { lang: Locale; order: PublicOrder })
             ))}
           </ol>
         </div>
+        {canRecord && (
+          <Link href={`${href(lang, "/mesaj/nou/")}?id=${order.id}&t=${token}`} className="btn btn-primary">
+            🎙 {getDict(lang).msg.recordCta}
+          </Link>
+        )}
         {order.referralCode && (
           <div className="rounded-2xl bg-blush p-4">
             <p className="text-sm text-muted">{t.yourCode}</p>
@@ -130,7 +136,7 @@ export function ThankYou({ lang }: { lang: Locale }) {
         <h1 className="mt-2 text-4xl sm:text-5xl">{t.thanksTitle}</h1>
         <p className="mt-3 text-lg text-muted">{t.thanksText}</p>
       </div>
-      {order && <OrderCard lang={lang} order={order} />}
+      {order && <OrderCard lang={lang} order={order} token={token} />}
       {failed && <p>{t.notFound}</p>}
       <Link href={`${href(lang, "/urmarire/")}?id=${id}&t=${token}`} className="btn btn-ghost">
         {t.track}
@@ -207,7 +213,7 @@ export function Track({ lang }: { lang: Locale }) {
         </form>
       )}
       {msg && <p role="alert">{msg}</p>}
-      {order && <OrderCard lang={lang} order={order} />}
+      {order && <OrderCard lang={lang} order={order} token={token ?? undefined} />}
     </div>
   );
 }

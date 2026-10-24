@@ -13,6 +13,7 @@ export const LIMITS = {
   /** Approval emails per buyer address, so agents can't flood someone's inbox. */
   approvalEmail: { name: "approval-email", max: 3, windowSec: 3600 },
   mcp: { name: "mcp", max: 120, windowSec: 60 },
+  messages: { name: "messages", max: 30, windowSec: 600 },
 } satisfies Record<string, Limit>;
 
 /** Fixed-window counter. Returns seconds to wait when the limit is exceeded, else 0. */

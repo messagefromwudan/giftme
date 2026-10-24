@@ -2,6 +2,7 @@ import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { CodeRecord } from "./codes";
 import type { Order } from "./orders";
+import type { Message } from "./messages";
 
 // The ONLY module that talks to storage. Production: Supabase Postgres + private Storage,
 // accessed with the service-role key from the server only (see supabase/migrations).
@@ -37,6 +38,15 @@ export interface Db {
 
   /** Fixed-window counter; returns the hit count in the current window. */
   rateHit(key: string, windowSec: number): Promise<number>;
+
+  insertMessage(m: Message): Promise<void>;
+  saveMessage(m: Message): Promise<void>;
+  getMessage(id: string): Promise<Message | null>;
+  /** Newest first. */
+  messagesForOrder(orderId: string): Promise<Message[]>;
+  deleteMessage(id: string): Promise<void>;
+  /** Messages whose retention ended (30 days after the PASS-IT-ON reveal). */
+  expiredMessages(now: Date): Promise<Message[]>;
 
   /** Cheap query that counts as activity (keeps a free Supabase project from pausing). */
   ping(): Promise<void>;
@@ -119,6 +129,48 @@ const fromCodeRow = (r: CodeRow): CodeRecord => ({
   ...(r.owner_email ? { ownerEmail: r.owner_email } : {}),
   ...(r.expires_at ? { expiresAt: r.expires_at } : {}),
   ...(r.source_order_id ? { sourceOrderId: r.source_order_id } : {}),
+});
+
+type MessageRow = {
+  id: string;
+  order_id: string;
+  kind: Message["kind"];
+  body: string | null;
+  storage_path: string | null;
+  mime_type: string | null;
+  size_bytes: number | null;
+  created_at: string;
+  revealed_at: string | null;
+  pass_code: string | null;
+  delete_after: string | null;
+};
+
+const messageRow = (m: Message): MessageRow => ({
+  id: m.id,
+  order_id: m.orderId,
+  kind: m.kind,
+  body: m.body ?? null,
+  storage_path: m.storagePath ?? null,
+  mime_type: m.mimeType ?? null,
+  size_bytes: m.sizeBytes ?? null,
+  created_at: m.createdAt,
+  revealed_at: m.revealedAt ?? null,
+  pass_code: m.passCode ?? null,
+  delete_after: m.deleteAfter ?? null,
+});
+
+const fromMessageRow = (r: MessageRow): Message => ({
+  id: r.id,
+  orderId: r.order_id,
+  kind: r.kind,
+  ...(r.body != null ? { body: r.body } : {}),
+  ...(r.storage_path ? { storagePath: r.storage_path } : {}),
+  ...(r.mime_type ? { mimeType: r.mime_type } : {}),
+  ...(r.size_bytes != null ? { sizeBytes: r.size_bytes } : {}),
+  createdAt: r.created_at,
+  ...(r.revealed_at ? { revealedAt: r.revealed_at } : {}),
+  ...(r.pass_code ? { passCode: r.pass_code } : {}),
+  ...(r.delete_after ? { deleteAfter: r.delete_after } : {}),
 });
 
 class DbError extends Error {
@@ -257,6 +309,40 @@ export class SupabaseDb implements Db {
     return check("rate hit", await this.sb.rpc("giftme_rate_hit", { p_key: key, p_window_seconds: windowSec })) as number;
   }
 
+  async insertMessage(m: Message) {
+    check("insert message", await this.sb.from("messages").insert(messageRow(m)));
+  }
+
+  async saveMessage(m: Message) {
+    const { id, ...row } = messageRow(m);
+    check("save message", await this.sb.from("messages").update(row).eq("id", id));
+  }
+
+  async getMessage(id: string) {
+    const data = check("get message", await this.sb.from("messages").select("*").eq("id", id).maybeSingle());
+    return data ? fromMessageRow(data as MessageRow) : null;
+  }
+
+  async messagesForOrder(orderId: string) {
+    const data = check(
+      "messages for order",
+      await this.sb.from("messages").select("*").eq("order_id", orderId).order("created_at", { ascending: false }),
+    );
+    return (data ?? []).map((r) => fromMessageRow(r as MessageRow));
+  }
+
+  async deleteMessage(id: string) {
+    check("delete message", await this.sb.from("messages").delete().eq("id", id));
+  }
+
+  async expiredMessages(now: Date) {
+    const data = check(
+      "expired messages",
+      await this.sb.from("messages").select("*").lt("delete_after", now.toISOString()).limit(200),
+    );
+    return (data ?? []).map((r) => fromMessageRow(r as MessageRow));
+  }
+
   async ping() {
     check("ping", await this.sb.from("orders").select("id", { head: true, count: "exact" }).limit(1));
   }
@@ -384,6 +470,29 @@ export class MemoryDb implements Db {
       return 1;
     }
     return ++e.hits;
+  }
+  private messages = new Map<string, Message>();
+  async insertMessage(m: Message) {
+    this.messages.set(m.id, structuredClone(m));
+  }
+  async saveMessage(m: Message) {
+    this.messages.set(m.id, structuredClone(m));
+  }
+  async getMessage(id: string) {
+    const m = this.messages.get(id);
+    return m ? structuredClone(m) : null;
+  }
+  async messagesForOrder(orderId: string) {
+    return [...this.messages.values()]
+      .filter((m) => m.orderId === orderId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((m) => structuredClone(m));
+  }
+  async deleteMessage(id: string) {
+    this.messages.delete(id);
+  }
+  async expiredMessages(now: Date) {
+    return [...this.messages.values()].filter((m) => m.deleteAfter && new Date(m.deleteAfter) < now).map((m) => structuredClone(m));
   }
   async ping() {}
   async cleanup() {

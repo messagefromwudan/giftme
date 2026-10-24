@@ -58,6 +58,8 @@ const T = {
     payCash: "Plată: numerar la livrare.",
     payTransfer: "Plată: transfer bancar. Îți trimitem detaliile de plată prin email.",
     track: "Urmărește comanda",
+    record: "Înregistrează mesajul pentru codul QR",
+    recordText: "Înregistrează un mesaj audio sau video (sau scrie un text) pentru codul QR de pe cutie. E gratuit.",
     deliveryTo: "Livrare",
     referral: (code: string) =>
       `Codul tău REFER A FRIEND: <strong>${esc(code)}</strong>. Prietenul tău primește −50 MDL la prima comandă, iar tu −50 MDL la următoarea ta comandă.`,
@@ -82,6 +84,8 @@ const T = {
     payCash: "Payment: cash on delivery.",
     payTransfer: "Payment: bank transfer. We'll email you the payment details.",
     track: "Track your order",
+    record: "Record your message for the QR code",
+    recordText: "Record an audio or video message (or write a text) for the QR code on the box. It's free.",
     deliveryTo: "Delivery",
     referral: (code: string) =>
       `Your REFER A FRIEND code: <strong>${esc(code)}</strong>. Your friend gets −50 MDL on their first order, and you get −50 MDL on your next one.`,
@@ -97,6 +101,7 @@ const T = {
 
 const siteUrl = () => process.env.SITE_URL || SITE.url;
 const langPrefix = (lang: Locale) => (lang === "en" ? "/en" : "");
+export const recordUrl = (o: Order) => `${siteUrl()}${langPrefix(o.lang)}/mesaj/nou/?id=${o.id}&t=${o.token}`;
 export const trackUrl = (o: Order) => `${siteUrl()}${langPrefix(o.lang)}/urmarire/?id=${o.id}&t=${o.token}`;
 export const approveUrl = (o: Order) =>
   `${siteUrl()}${langPrefix(o.lang)}/confirma-comanda/?id=${o.id}&a=${o.approvalToken}`;
@@ -142,7 +147,9 @@ export function customerConfirmation(o: Order) {
 ${summary(o)}
 <p style="font-size:14px">${o.payment === "cash" ? t.payCash : t.payTransfer}</p>
 <p style="font-size:14px">${t.deliveryTo}: ${esc(o.delivery.date)} · ${esc(o.delivery.address)}${o.delivery.city ? `, ${esc(o.delivery.city)}` : ""}</p>
-${btn(trackUrl(o), t.track)}
+<p style="font-size:14px">${t.recordText}</p>
+${btn(recordUrl(o), t.record)}
+<p style="font-size:14px"><a href="${esc(trackUrl(o))}">${t.track}</a></p>
 ${o.referralCode ? `<p style="font-size:14px">${t.referral(o.referralCode)}</p>` : ""}
 <p style="font-size:14px">${t.contact} ${SITE.email}.</p>`;
   return { subject: `GiftMe! ${o.id} · ${o.lang === "ro" ? "comandă de exercițiu" : "practice order"}`, html: layout(body) };
