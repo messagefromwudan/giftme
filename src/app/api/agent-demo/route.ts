@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { runLlmAgent, runScriptedAgent, SCENARIOS, type DemoEvent } from "@/lib/agent-demo";
+import { llmConfigured } from "@/lib/llm";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { json, readJson, tooMany } from "@/lib/http";
 
@@ -31,13 +32,13 @@ export async function POST(req: Request) {
       try {
         const ran = await runLlmAgent(scenario, origin, lang, emit, runId);
         if (!ran) {
-          const note = process.env.ANTHROPIC_API_KEY
+          const note = llmConfigured()
             ? lang === "ro"
               ? "Serviciul AI nu răspunde acum; rulează agentul scriptat, cu aceleași apeluri reale."
               : "The AI service isn't responding; running the scripted agent with the same real calls."
             : lang === "ro"
-              ? "Cheia Claude API nu este configurată: rulează agentul scriptat, cu aceleași apeluri reale către API."
-              : "No Claude API key configured: running the scripted agent, with the same real API calls.";
+              ? "Cheia pentru modelul AI nu este configurată: rulează agentul scriptat, cu aceleași apeluri reale către API."
+              : "No AI model key configured: running the scripted agent, with the same real API calls.";
           await runScriptedAgent(scenario, origin, lang, emit, runId, note);
         }
       } catch (e) {

@@ -1,15 +1,14 @@
 import "server-only";
-import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import { BOXES, CUSTOM_BOX_ID, getBox, type Locale } from "./catalog";
+import { BOXES, CUSTOM_BOX_ID, RULES, getBox, type Locale } from "./catalog";
 import { quote, QuoteError } from "./pricing";
 import { boxForAgent, searchBoxes } from "./agent";
+import { llmConfigured, LlmUnavailableError, runToolAgent, type LlmTool } from "./llm";
 
-// "Harta emoției": the on-site gift assistant. A short questionnaire, then a chat with Claude
+// "Harta emoției": the on-site gift assistant. A short questionnaire, then a chat with the model
 // that can only search our catalog, price on the server and show a proposal. It never creates
 // orders: the customer adds the proposal to the cart with a click (explicit confirmation).
 
-export const HARTA_MODEL = "claude-opus-5-5";
 export const MAX_USER_MESSAGES = 12;
 const MAX_TOOL_ROUNDS = 4;
 
@@ -116,11 +115,11 @@ export function fallbackProposal(a: Answers, lang: Locale): Proposal {
 // The chat
 // ---------------------------------------------------------------------------
 
-const tools: Anthropic.Beta.BetaTool[] = [
+const tools: LlmTool[] = [
   {
     name: "search_boxes",
     description: "Search the GiftMe catalog (9 boxes). Returns boxes with exact prices, contents and occasions.",
-    input_schema: {
+    parameters: {
       type: "object",
       properties: {
         query: { type: "string", description: "Who it's for, occasion, interests" },
@@ -129,12 +128,11 @@ const tools: Anthropic.Beta.BetaTool[] = [
       required: ["query", "max_budget_mdl"],
       additionalProperties: false,
     },
-    strict: true,
   },
   {
     name: "get_quote",
     description: "Exact server price for boxes (offers applied automatically, never stacked). The only source of prices.",
-    input_schema: {
+    parameters: {
       type: "object",
       properties: {
         items: {
@@ -150,13 +148,12 @@ const tools: Anthropic.Beta.BetaTool[] = [
       required: ["items"],
       additionalProperties: false,
     },
-    strict: true,
   },
   {
     name: "show_proposal",
     description:
       "Show the customer a proposal card they can add to their cart with one click. Use it whenever you recommend or change a recommendation. reasons: one short line per product, naming a product that is really in the box.",
-    input_schema: {
+    parameters: {
       type: "object",
       properties: {
         items: {
@@ -183,7 +180,6 @@ const tools: Anthropic.Beta.BetaTool[] = [
       required: ["items", "reasons", "custom_gift", "summary"],
       additionalProperties: false,
     },
-    strict: true,
   },
 ];
 
@@ -209,55 +205,90 @@ function systemPrompt(a: Answers, lang: Locale) {
   ].join("\n");
 }
 
-export type HartaReply = { text: string; proposal: Proposal | null; fallback?: "no_key" | "api_error" };
+export type HartaReply = { text: string; proposal: Proposal | null; fallback?: "no_key" | "api_error" | "refusal" };
 
 export async function hartaReply(input: z.infer<typeof chatSchema>): Promise<HartaReply> {
   const { lang, answers } = input;
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!llmConfigured()) {
     return { text: fallbackText(lang), proposal: fallbackProposal(answers, lang), fallback: "no_key" };
   }
-  const client = new Anthropic({ maxRetries: 1, timeout: 45_000 });
-  const messages: Anthropic.Beta.BetaMessageParam[] =
+  const messages =
     input.messages.length > 0
-      ? input.messages.map((m) => ({ role: m.role, content: m.content }))
-      : [{ role: "user", content: lang === "ro" ? "Am completat chestionarul. Ce îmi recomanzi?" : "I filled in the questionnaire. What do you recommend?" }];
+      ? input.messages.slice()
+      : [{ role: "user" as const, content: lang === "ro" ? "Am completat chestionarul. Ce îmi recomanzi?" : "I filled in the questionnaire. What do you recommend?" }];
   if (messages[0].role !== "user") messages.unshift({ role: "user", content: "…" });
 
   let proposal: Proposal | null = null;
-  const texts: string[] = [];
+  // Every MDL amount the server produced in this request; the reply may only mention these.
+  const allowedAmounts = new Set<number>(catalogAmounts());
   try {
-    for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
-      const res = await client.beta.messages.create({
-        model: HARTA_MODEL,
-        max_tokens: 4000,
-        betas: ["server-side-fallback-2026-07-01"],
-        fallbacks: "default",
-        output_config: { effort: "low" },
-        system: systemPrompt(answers, lang),
-        tools,
-        messages,
-      });
-      if (res.stop_reason === "refusal") {
-        return { text: lang === "ro" ? "Hai să vorbim despre cadoul potrivit. Pentru cine cauți?" : "Let's talk about the right gift. Who is it for?", proposal };
-      }
-      for (const b of res.content) if (b.type === "text" && b.text.trim()) texts.push(b.text.trim());
-      if (res.stop_reason !== "tool_use") break;
-      messages.push({ role: "assistant", content: res.content });
-      const results: Anthropic.Beta.BetaToolResultBlockParam[] = [];
-      for (const b of res.content) {
-        if (b.type !== "tool_use") continue;
-        const out = runTool(b.name, b.input, lang);
+    const run = await runToolAgent({
+      system: systemPrompt(answers, lang),
+      messages,
+      tools,
+      maxRounds: MAX_TOOL_ROUNDS,
+      maxOutputTokens: 4000,
+      effort: "low",
+      tag: "harta",
+      execute: async (name, args) => {
+        const out = runTool(name, args, lang);
         if (out.proposal) proposal = out.proposal;
-        results.push({ type: "tool_result", tool_use_id: b.id, content: JSON.stringify(out.result), is_error: Boolean(out.error) });
-      }
-      messages.push({ role: "user", content: results });
+        collectNumbers(out.result, allowedAmounts);
+        return { result: out.result, isError: out.error };
+      },
+    });
+    if (run.refused) {
+      return { text: refusalText(lang), proposal: proposal ?? fallbackProposal(answers, lang), fallback: "refusal" };
     }
+    const text = run.texts.join("\n\n");
+    const finalProposal = proposal as Proposal | null;
+    if (!text) return { text: finalProposal ? finalProposal.summary : fallbackText(lang), proposal: finalProposal };
+    // Prices come only from the server: drop a reply that states an amount we did not produce.
+    if (unknownAmounts(text, allowedAmounts).length > 0) {
+      console.warn("[harta] reply mentioned an amount not produced by the server; replaced");
+      return { text: safeText(lang, finalProposal), proposal: finalProposal };
+    }
+    return { text, proposal: finalProposal };
   } catch (e) {
-    console.error("[harta]", e instanceof Anthropic.APIError ? `${e.status} ${e.message}` : e);
+    if (!(e instanceof LlmUnavailableError)) throw e;
+    console.error("[harta] model unavailable:", e.message);
     return { text: fallbackText(lang), proposal: proposal ?? fallbackProposal(answers, lang), fallback: "api_error" };
   }
-  return { text: texts.join("\n\n") || (proposal ? proposal.summary : fallbackText(lang)), proposal };
 }
+
+// ---------------------------------------------------------------------------
+// Price guard
+// ---------------------------------------------------------------------------
+
+function catalogAmounts(): number[] {
+  return [...BOXES.map((b) => b.price), RULES.delivery.fee, RULES.delivery.freeThresholdChisinau, 50, RULES.custom.maxGiftValueWithoutApproval];
+}
+
+function collectNumbers(value: unknown, into: Set<number>) {
+  if (typeof value === "number" && Number.isFinite(value)) into.add(Math.round(value));
+  else if (Array.isArray(value)) value.forEach((v) => collectNumbers(v, into));
+  else if (value && typeof value === "object") Object.values(value).forEach((v) => collectNumbers(v, into));
+}
+
+/** Amounts written as "530 MDL", "1 020 lei", "−102 MDL" that the server did not produce. */
+export function unknownAmounts(text: string, allowed: Set<number>): number[] {
+  const found = [...text.matchAll(/(\d[\d\s.,]*\d|\d)\s*(?:MDL|lei|leu)\b/gi)].map((m) =>
+    Number(m[1].replace(/[\s.,]/g, "")),
+  );
+  return found.filter((n) => !allowed.has(n));
+}
+
+const safeText = (lang: Locale, p: Proposal | null) =>
+  p
+    ? lang === "ro"
+      ? "Iată propunerea mea. Prețul exact este pe card, calculat de server."
+      : "Here's my suggestion. The exact price is on the card, calculated by our server."
+    : fallbackText(lang);
+
+const refusalText = (lang: Locale) =>
+  lang === "ro"
+    ? "Aici te pot ajuta doar cu alegerea unei cutii GiftMe. Iată o propunere pe baza răspunsurilor tale."
+    : "I can only help you choose a GiftMe box here. Here's a suggestion based on your answers."
 
 function runTool(name: string, raw: unknown, lang: Locale): { result: unknown; proposal?: Proposal; error?: boolean } {
   const input = (raw ?? {}) as Record<string, unknown>;

@@ -1,15 +1,14 @@
 import "server-only";
-import Anthropic from "@anthropic-ai/sdk";
 import { SITE, type Locale } from "./catalog";
 import { deliveryDateBounds } from "./orders";
 import { searchBoxes } from "./agent";
+import { llmConfigured, llmInfo, LlmUnavailableError, runToolAgent, type LlmTool } from "./llm";
 
 // /agent-demo: an external shopping agent that knows only our address. It reads /llms.txt and
 // /catalog.json, gets a quote and places an order through the public agent API, exactly as a
 // customer's own assistant would. The order then waits for approval by email (human-in-the-loop).
-// If the Claude API is unavailable, a scripted agent makes the same real API calls instead.
+// If the model API is unavailable, a scripted agent makes the same real API calls instead.
 
-export const DEMO_MODEL = "claude-opus-5-5";
 const MAX_TURNS = 14;
 
 export type DemoEvent =
@@ -117,25 +116,24 @@ async function callSite(origin: string, method: "GET" | "POST", path: string, bo
 const preview = (text: string, n = 1800) => (text.length > n ? `${text.slice(0, n)}\n…` : text);
 
 // ---------------------------------------------------------------------------
-// LLM agent (Claude Opus 5.5 with server-side refusal fallback)
+// LLM agent (provider and model from lib/llm.ts)
 // ---------------------------------------------------------------------------
 
-const tools: Anthropic.Beta.BetaTool[] = [
+const tools: LlmTool[] = [
   {
     name: "http_get",
     description: `GET a public document from ${SITE.url}. Allowed paths: ${GET_PATHS.join(", ")}.`,
-    input_schema: {
+    parameters: {
       type: "object",
       properties: { path: { type: "string", description: "Path starting with /, e.g. /llms.txt" } },
       required: ["path"],
       additionalProperties: false,
     },
-    strict: true,
   },
   {
     name: "http_post",
     description: `POST JSON to ${SITE.url}. Allowed paths: ${POST_PATHS.join(", ")}. For /api/agent/order an idempotency_key is required.`,
-    input_schema: {
+    parameters: {
       type: "object",
       properties: {
         path: { type: "string" },
@@ -145,7 +143,6 @@ const tools: Anthropic.Beta.BetaTool[] = [
       required: ["path", "body_json", "idempotency_key"],
       additionalProperties: false,
     },
-    strict: true,
   },
 ];
 
@@ -170,65 +167,56 @@ export async function runLlmAgent(
   emit: (e: DemoEvent) => void,
   runId: string,
 ): Promise<boolean> {
-  if (!process.env.ANTHROPIC_API_KEY) return false;
-  const client = new Anthropic({ maxRetries: 1, timeout: 60_000 });
+  if (!llmConfigured()) return false;
   const customer = demoCustomer(runId);
-  const date = deliveryDateBounds().min;
-  const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: scenario.request(addDays(date, 3)) }];
+  const request = scenario.request(addDays(deliveryDateBounds().min, 3));
   let order: { id?: string; status?: string; total?: number; trackingUrl?: string } = {};
   let started = false;
+  const start = () => {
+    if (started) return;
+    started = true;
+    emit({ type: "start", mode: "llm", model: `${llmInfo().processor} ${llmInfo().model}`, scenario: request });
+  };
 
-  for (let turn = 0; turn < MAX_TURNS; turn++) {
-    let response: Anthropic.Beta.BetaMessage;
-    try {
-      response = await client.beta.messages.create({
-        model: DEMO_MODEL,
-        max_tokens: 8000,
-        betas: ["server-side-fallback-2026-07-01"],
-        fallbacks: "default",
-        output_config: { effort: "low" },
-        system: systemPrompt(customer, lang),
-        tools,
-        messages,
-      });
-    } catch (e) {
-      if (!started) return false; // fall back to the scripted agent
-      emit({ type: "error", message: `Claude API: ${(e as Error).message.slice(0, 200)}` });
-      return true;
-    }
-    if (!started) {
-      emit({ type: "start", mode: "llm", model: DEMO_MODEL, scenario: scenario.request(addDays(date, 3)) });
-      started = true;
-    }
-    if (response.stop_reason === "refusal") {
-      emit({ type: "error", message: "The model declined this request." });
-      return true;
-    }
-    for (const block of response.content) {
-      if (block.type === "text" && block.text.trim()) emit({ type: "say", text: block.text.trim() });
-    }
-    if (response.stop_reason !== "tool_use") break;
-
-    messages.push({ role: "assistant", content: response.content });
-    const results: Anthropic.Beta.BetaToolResultBlockParam[] = [];
-    for (const block of response.content) {
-      if (block.type !== "tool_use") continue;
-      const input = block.input as { path?: string; body_json?: string; idempotency_key?: string };
-      const method = block.name === "http_get" ? "GET" : "POST";
-      let body: unknown;
-      let result: CallResult;
-      const t0 = Date.now();
-      try {
-        body = method === "POST" ? JSON.parse(input.body_json ?? "{}") : undefined;
-        result = await callSite(origin, method, String(input.path ?? ""), body, input.idempotency_key);
-      } catch (e) {
-        result = { status: 0, text: `Request failed: ${(e as Error).message}` };
-      }
-      emit({ type: "call", method, url: `${SITE.url}${input.path}`, body, status: result.status, preview: preview(result.text), ms: Date.now() - t0 });
-      if (input.path === "/api/agent/order" && result.status < 300) order = orderInfo(result.text);
-      results.push({ type: "tool_result", tool_use_id: block.id, content: preview(result.text, 12_000), is_error: result.status >= 400 || result.status === 0 });
-    }
-    messages.push({ role: "user", content: results });
+  try {
+    const run = await runToolAgent({
+      system: systemPrompt(customer, lang),
+      messages: [{ role: "user", content: request }],
+      tools,
+      maxRounds: MAX_TURNS,
+      maxOutputTokens: 8000,
+      effort: "low",
+      timeoutMs: 60_000,
+      tag: "agent-demo",
+      onText: (text) => {
+        start();
+        emit({ type: "say", text });
+      },
+      execute: async (name, raw) => {
+        start();
+        const input = (raw ?? {}) as { path?: string; body_json?: string; idempotency_key?: string };
+        const method = name === "http_get" ? "GET" : "POST";
+        const t0 = Date.now();
+        let body: unknown;
+        let result: CallResult;
+        try {
+          body = method === "POST" ? JSON.parse(input.body_json ?? "{}") : undefined;
+          result = await callSite(origin, method, String(input.path ?? ""), body, input.idempotency_key || undefined);
+        } catch (e) {
+          result = { status: 0, text: `Request failed: ${(e as Error).message}` };
+        }
+        emit({ type: "call", method, url: `${SITE.url}${input.path}`, body, status: result.status, preview: preview(result.text), ms: Date.now() - t0 });
+        if (input.path === "/api/agent/order" && result.status < 300) order = orderInfo(result.text);
+        return { result: preview(result.text, 12_000), isError: result.status >= 400 || result.status === 0 };
+      },
+    });
+    start();
+    if (run.refused) emit({ type: "error", message: lang === "ro" ? "Modelul a refuzat cererea." : "The model declined this request." });
+  } catch (e) {
+    if (!(e instanceof LlmUnavailableError)) throw e;
+    if (!started) return false; // nothing shown yet: run the scripted agent instead
+    emit({ type: "error", message: `${llmInfo().processor}: ${e.message.slice(0, 200)}` });
+    return true;
   }
   emit({ type: "done", orderId: order.id, status: order.status, total: order.total, trackingUrl: order.trackingUrl, summary: "" });
   return true;
@@ -250,7 +238,7 @@ function addDays(date: string, days: number) {
 }
 
 // ---------------------------------------------------------------------------
-// Scripted agent: same real API calls, fixed plan (used when the Claude API is unavailable)
+// Scripted agent: same real API calls, fixed plan (used when the model API is unavailable)
 // ---------------------------------------------------------------------------
 
 export async function runScriptedAgent(scenario: Scenario, origin: string, lang: Locale, emit: (e: DemoEvent) => void, runId: string, note?: string) {

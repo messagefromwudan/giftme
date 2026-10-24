@@ -44,9 +44,11 @@ export default async function Privacy({ params }: PageProps<"/[lang]/confidentia
           codul PASS-IT-ON.
         </li>
         <li>
-          <strong>Asistentul „Harta emoției”</strong>: răspunsurile la chestionar și mesajele din conversație
-          sunt trimise furnizorului nostru de inteligență artificială (Anthropic) ca să primești o recomandare.
-          Nu le salvăm în baza noastră de date. Nu scrie în conversație date personale de care nu e nevoie.
+          <strong>Asistentul „Harta emoției”</strong> și <strong>demonstrația /agent-demo</strong>: răspunsurile la
+          chestionar și mesajele din conversație sunt trimise către OpenAI (OpenAI OpCo, LLC, SUA), furnizorul
+          modelului de inteligență artificială, ca să primești o recomandare. Noi nu salvăm conversația în baza
+          noastră de date și cerem ca OpenAI să nu o păstreze pentru consultare ulterioară. Nu scrie în conversație
+          date personale de care nu e nevoie.
         </li>
         <li>
           <strong>Comenzi plasate de asistenți AI</strong>: dacă asistentul tău AI plasează o comandă, îți
@@ -77,7 +79,8 @@ export default async function Privacy({ params }: PageProps<"/[lang]/confidentia
       <p>
         Nu vindem și nu închiriem datele tale. Le folosim doar prin serviciile tehnice de care avem nevoie ca
         site-ul să funcționeze: găzduirea (Vercel), baza de date și stocarea (Supabase), emailul și asistentul
-        AI (Anthropic, doar pentru conversațiile din „Harta emoției”).
+        AI (OpenAI OpCo, LLC, din SUA, doar pentru conversațiile din „Harta emoției” și demonstrația pentru
+        agenți).
       </p>
 
       <h2>Drepturile tale</h2>
