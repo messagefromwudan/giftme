@@ -263,7 +263,7 @@ export async function hartaReply(input: z.infer<typeof chatSchema>): Promise<Har
 // ---------------------------------------------------------------------------
 
 function catalogAmounts(): number[] {
-  return [...BOXES.map((b) => b.price), RULES.delivery.fee, RULES.delivery.freeThresholdChisinau, 50, RULES.custom.maxGiftValueWithoutApproval];
+  return [...BOXES.map((b) => b.price), RULES.delivery.fee, RULES.delivery.freeOverChisinau, 50, RULES.custom.maxGiftValueWithoutApproval];
 }
 
 function collectNumbers(value: unknown, into: Set<number>) {

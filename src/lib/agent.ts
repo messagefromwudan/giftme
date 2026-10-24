@@ -8,6 +8,7 @@ import {
   OFFERS,
   RULES,
   SITE,
+  boxMinLeadDays,
   getBox,
   type Box,
   type Locale,
@@ -48,6 +49,7 @@ export function boxForAgent(box: Box, lang: Locale = "en") {
     occasions: box.occasions.map((o) => o[lang]),
     tags: box.tags,
     delivery_area: box.custom ? "Chișinău only" : "Moldova",
+    min_lead_time_days: boxMinLeadDays(box),
     availability: "in_stock",
   };
 }
@@ -118,6 +120,7 @@ export function buildCustomBox(input: z.input<typeof customBoxInput>) {
     },
     rules: [
       "Delivery: surprise home delivery in Chișinău only (included in the fee).",
+      `Lead time: the delivery date must be at least ${RULES.custom.minLeadDays} days from today (other boxes: ${RULES.delivery.minLeadDays}).`,
       "The GiftMe team emails the customer the gift price; the gift is bought only after the customer pays that quote.",
       `Gifts above ${RULES.custom.maxGiftValueWithoutApproval} MDL need written approval from the coordinator.`,
       "The customer must accept the YOUR BOX (GM-09) terms: set acceptCustomTerms=true only if the human explicitly agreed.",
@@ -148,12 +151,12 @@ export async function agentQuote(input: z.input<typeof quoteInput>) {
       quote.delivery.reason === "included_in_custom_box"
         ? "Delivery included (YOUR BOX surprise delivery in Chișinău)."
         : quote.delivery.fee === 0
-          ? `Free delivery in Chișinău (subtotal after discount ≥ ${RULES.delivery.freeThresholdChisinau} MDL).`
+          ? `Free delivery in Chișinău (subtotal after discount over ${RULES.delivery.freeOverChisinau} MDL).`
           : `Delivery ${quote.delivery.fee} MDL.`,
       quote.customGiftPending ? "Total excludes the YOUR BOX gift, which a human quotes after the order." : null,
     ].filter(Boolean),
     checkout_open: checkoutOpen(),
-    delivery_dates: deliveryDateBounds(),
+    delivery_dates: deliveryDateBounds(new Date(), i.items),
     notice: PRACTICE_NOTICE.en,
   };
 }
@@ -220,6 +223,7 @@ export function catalogDocument() {
       tags: b.tags,
       availability: "in_stock",
       delivery_area: b.custom ? ["chisinau"] : ["chisinau", "moldova"],
+      min_lead_time_days: boxMinLeadDays(b),
     })),
     offers: {
       stacking: "never: the server applies the single best offer automatically",
@@ -236,10 +240,18 @@ export function catalogDocument() {
       notes: OFFER_NOTES,
     },
     delivery: {
-      chisinau: { fee_mdl: RULES.delivery.fee, free_from_mdl_after_discount: RULES.delivery.freeThresholdChisinau },
+      chisinau: {
+        fee_mdl: RULES.delivery.fee,
+        free_over_mdl_after_discount: RULES.delivery.freeOverChisinau,
+        free_rule: `free only when the subtotal after discount is strictly more than ${RULES.delivery.freeOverChisinau} MDL; exactly ${RULES.delivery.freeOverChisinau} MDL pays ${RULES.delivery.fee} MDL`,
+      },
       rest_of_moldova: { fee_mdl: RULES.delivery.fee, free: false },
       custom_box: "YOUR BOX (GM-09): surprise delivery in Chișinău only, included",
-      lead_time_days: { min: 2, max: 180 },
+      lead_time_days: {
+        min: RULES.delivery.minLeadDays,
+        max: RULES.delivery.maxLeadDays,
+        per_box: "see boxes[].min_lead_time_days; an order's earliest date is set by its slowest box",
+      },
     },
     payment: {
       methods: ["cash", "transfer"],

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { CUSTOM_BOX_ID, type Locale } from "@/lib/catalog";
+import { CUSTOM_BOX_ID, RULES, type Locale } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import { getDict, href } from "@/i18n";
 import { QuoteSummary } from "./QuoteSummary";
@@ -89,7 +89,7 @@ export function Checkout({ lang }: { lang: Locale }) {
     } catch {}
   }, [f]);
 
-  const HINTED: (keyof Form)[] = ["occasion", "engraving", "labels", "perBoxNames", "giftIdea", "email"];
+  const HINTED: (keyof Form)[] = ["occasion", "engraving", "labels", "perBoxNames", "giftIdea", "email", ...(hasCustom ? ["date" as const] : [])];
   const inp = (id: keyof Form) => {
     const described = [HINTED.includes(id) && `f-${id}-hint`, errors[id] && `f-${id}-err`].filter(Boolean).join(" ");
     return {
@@ -125,6 +125,8 @@ export function Checkout({ lang }: { lang: Locale }) {
     req("recipient", f.recipient.trim().length >= 1);
     req("address", f.address.trim().length >= 5);
     req("date", Boolean(f.date));
+    const dates = data?.deliveryDates;
+    if (f.date && dates && (f.date < dates.min || f.date > dates.max)) e.date = t.dateRange(dates.min, dates.max);
     req("name", f.name.trim().length >= 2);
     req("email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim()));
     req("phone", /^\+?[\d\s()-]{6,20}$/.test(f.phone.trim()));
@@ -268,7 +270,7 @@ export function Checkout({ lang }: { lang: Locale }) {
               <Field id="address" label={t.address} error={errors.address} required>
                 <input {...inp("address")} value={f.address} onChange={(e) => set("address", e.target.value)} maxLength={200} autoComplete="street-address" />
               </Field>
-              <Field id="date" label={t.date} error={errors.date} required>
+              <Field id="date" label={t.date} hint={hasCustom ? t.customLeadHint(RULES.custom.minLeadDays) : undefined} error={errors.date} required>
                 <input
                   {...inp("date")}
                   type="date"

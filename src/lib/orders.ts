@@ -1,7 +1,7 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
-import { BOXES, CUSTOM_BOX_ID, RULES, type Locale } from "./catalog";
+import { BOXES, CUSTOM_BOX_ID, RULES, boxMinLeadDays, getBox, type Locale } from "./catalog";
 import { chisinauDate, quote, type Quote } from "./pricing";
 import {
   checkCode,
@@ -43,18 +43,24 @@ const text = (max: number, min = 0, multiline = false) =>
   z.string().transform(clean(multiline)).pipe(z.string().min(min).max(max));
 const optionalText = (max: number, multiline = false) => text(max, 0, multiline).optional().default("");
 
-export const MIN_LEAD_DAYS = 2;
-export const MAX_LEAD_DAYS = 180;
-
 function addDays(date: string, days: number) {
   const d = new Date(`${date}T12:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
 
-export function deliveryDateBounds(now = new Date()) {
+/** Earliest and latest delivery date for these items: the slowest box sets the minimum
+ *  (GM-09 needs RULES.custom.minLeadDays, every other box RULES.delivery.minLeadDays). */
+export function deliveryDateBounds(now = new Date(), items: { boxId: string }[] = []) {
   const today = chisinauDate(now);
-  return { min: addDays(today, MIN_LEAD_DAYS), max: addDays(today, MAX_LEAD_DAYS) };
+  const minDays = Math.max(
+    RULES.delivery.minLeadDays,
+    ...items.map((i) => {
+      const box = getBox(i.boxId);
+      return box ? boxMinLeadDays(box) : 0;
+    }),
+  );
+  return { min: addDays(today, minDays), max: addDays(today, RULES.delivery.maxLeadDays), minLeadDays: minDays };
 }
 
 export const orderInputSchema = z
@@ -249,9 +255,12 @@ export async function createOrder(
   }
   const input = parsed.data;
 
-  const bounds = deliveryDateBounds(opts.now);
+  const bounds = deliveryDateBounds(opts.now, input.items);
   if (input.delivery.date < bounds.min || input.delivery.date > bounds.max) {
-    throw new OrderError("INVALID_DATE", `Delivery date must be between ${bounds.min} and ${bounds.max}`, bounds);
+    const why = bounds.minLeadDays > RULES.delivery.minLeadDays
+      ? ` (YOUR BOX GM-09 needs at least ${bounds.minLeadDays} days)`
+      : "";
+    throw new OrderError("INVALID_DATE", `Delivery date must be between ${bounds.min} and ${bounds.max}${why}`, bounds);
   }
 
   // Idempotency: the same key always returns the same order.

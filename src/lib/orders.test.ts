@@ -155,13 +155,39 @@ describe.each(backends)("orders on %s", (_name, makeDb) => {
 
   it("GM-09 requires the gift idea and the GM-09 terms", async () => {
     const items = [{ boxId: "GM-09", quantity: 1 }];
-    await expect(createOrder(input({ items }), { source: "web" })).rejects.toThrow(OrderError);
+    const delivery = { zone: "chisinau", address: "str. Exemplu 1", date: deliveryDateBounds(new Date(), items).min };
+    await expect(createOrder(input({ items, delivery }), { source: "web" })).rejects.toThrow(OrderError);
     const { order } = await createOrder(
-      input({ items, customGift: { idea: "o bijuterie" }, acceptCustomTerms: true }),
+      input({ items, delivery, customGift: { idea: "o bijuterie" }, acceptCustomTerms: true }),
       { source: "web" },
     );
     expect(order.customGift).toMatchObject({ idea: "o bijuterie", status: "awaiting_quote" });
     expect(order.quote.delivery.fee).toBe(0);
+  });
+
+  it("GM-09 needs 5 days, every other box 2; in a mixed order the slowest box wins", async () => {
+    const now = new Date("2026-11-02T10:00:00+02:00");
+    expect(deliveryDateBounds(now, [{ boxId: "GM-01" }])).toMatchObject({ min: "2026-11-04", minLeadDays: 2 });
+    expect(deliveryDateBounds(now, [{ boxId: "GM-09" }])).toMatchObject({ min: "2026-11-07", minLeadDays: 5 });
+    expect(deliveryDateBounds(now, [{ boxId: "GM-01" }, { boxId: "GM-09" }])).toMatchObject({ min: "2026-11-07" });
+
+    const gm09 = { customGift: { idea: "o bijuterie" }, acceptCustomTerms: true };
+    const at = (days: number) => {
+      const d = new Date(`${deliveryDateBounds().min}T12:00:00Z`); // today + 2
+      d.setUTCDate(d.getUTCDate() + days - 2);
+      return { zone: "chisinau", address: "str. Exemplu 1", date: d.toISOString().slice(0, 10) };
+    };
+    for (const items of [[{ boxId: "GM-09", quantity: 1 }], [{ boxId: "GM-01", quantity: 1 }, { boxId: "GM-09", quantity: 1 }]]) {
+      await expect(createOrder(input({ items, ...gm09, delivery: at(4) }), { source: "agent_api" })).rejects.toMatchObject({
+        code: "INVALID_DATE",
+        message: expect.stringContaining("GM-09 needs at least 5 days"),
+      });
+      const { order } = await createOrder(input({ items, ...gm09, delivery: at(5) }), { source: "agent_api" });
+      expect(order.delivery.date).toBe(at(5).date);
+    }
+    // Other boxes still accept 2 days.
+    const { order } = await createOrder(input({ delivery: at(2) }), { source: "web" });
+    expect(order.delivery.date).toBe(at(2).date);
   });
 
   it("validates dates, terms and untrusted text", async () => {

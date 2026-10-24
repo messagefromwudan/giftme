@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { BOXES, EVERY_BOX_INCLUDES, OFFERS, RULES, SITE } from "./catalog";
+import { BOXES, EVERY_BOX_INCLUDES, OFFERS, RULES, SITE, boxMinLeadDays } from "./catalog";
 import { checkoutOpen, orderInputSchema } from "./orders";
 import { quoteInput, PRACTICE_NOTICE } from "./agent";
 
@@ -107,7 +107,7 @@ export function openApiDocument() {
         OrderRequest: {
           ...toSchema(orderInputSchema),
           description:
-            "Set acceptTerms (and acceptCustomTerms for GM-09) to true ONLY if the human explicitly agreed to the terms. GM-09 requires customGift.idea and delivery.zone='chisinau'.",
+            `Set acceptTerms (and acceptCustomTerms for GM-09) to true ONLY if the human explicitly agreed to the terms. GM-09 requires customGift.idea, delivery.zone='chisinau' and a delivery.date at least ${RULES.custom.minLeadDays} days ahead (other boxes: ${RULES.delivery.minLeadDays}); otherwise 400 INVALID_DATE.`,
           example: {
             lang: "en",
             items: [{ boxId: "GM-07", quantity: 1 }],
@@ -123,10 +123,17 @@ export function openApiDocument() {
           type: "object",
           properties: {
             currency: { const: "MDL" },
-            quote: { type: "object", description: "lines, subtotal, offer, delivery, total (MDL)" },
+            quote: {
+              type: "object",
+              description: `lines, subtotal, offer, delivery, total (MDL). Delivery in Chișinău is free only when the subtotal after discount is over ${RULES.delivery.freeOverChisinau} MDL (exactly ${RULES.delivery.freeOverChisinau} pays ${RULES.delivery.fee} MDL).`,
+            },
             explanation: { type: "array", items: { type: "string" } },
             checkout_open: { type: "boolean" },
-            delivery_dates: { type: "object", properties: { min: { type: "string" }, max: { type: "string" } } },
+            delivery_dates: {
+              type: "object",
+              description: `Allowed delivery dates for these items. GM-09 needs ${RULES.custom.minLeadDays} days, other boxes ${RULES.delivery.minLeadDays}.`,
+              properties: { min: { type: "string" }, max: { type: "string" }, minLeadDays: { type: "integer" } },
+            },
             notice: { type: "string" },
           },
         },
@@ -177,7 +184,10 @@ export function llmsTxt() {
     "",
     "## Boxes",
     "",
-    ...BOXES.map((b) => `- ${b.id} ${b.name}: ${b.custom ? "360 MDL service fee + gift quoted by our team" : `${b.price} MDL`}. ${b.tagline.en}`),
+    ...BOXES.map(
+      (b) =>
+        `- ${b.id} ${b.name}: ${b.custom ? "360 MDL service fee + gift quoted by our team" : `${b.price} MDL`}; order at least ${boxMinLeadDays(b)} days ahead. ${b.tagline.en}`,
+    ),
     "",
     "## Optional",
     "",
@@ -197,6 +207,7 @@ export function llmsFullTxt() {
       `- For: ${b.occasions.map((o) => o.en).join(", ")}`,
       `- Contents: ${b.contents.map((c) => c.en).join("; ")}`,
       `- Delivery: ${b.custom ? "surprise home delivery in Chișinău only, included" : "Chișinău or anywhere in Moldova"}`,
+      `- Minimum lead time: ${boxMinLeadDays(b)} days (earliest delivery date from today)`,
       `- Page: ${SITE.url}/en/cutii/${b.slug}/`,
       `- Romanian: ${b.tagline.ro}`,
       "",
@@ -221,9 +232,9 @@ export function llmsFullTxt() {
     "",
     "## Delivery",
     "",
-    `- Chișinău: ${RULES.delivery.fee} MDL, free from ${RULES.delivery.freeThresholdChisinau} MDL after discount.`,
+    `- Chișinău: ${RULES.delivery.fee} MDL, free when the subtotal after discount is over ${RULES.delivery.freeOverChisinau} MDL (strictly more: exactly ${RULES.delivery.freeOverChisinau} MDL pays ${RULES.delivery.fee} MDL).`,
     `- Elsewhere in Moldova: ${RULES.delivery.fee} MDL, never free.`,
-    "- Delivery date: from 2 days to 180 days ahead.",
+    `- Delivery date: from ${RULES.delivery.minLeadDays} to ${RULES.delivery.maxLeadDays} days ahead; YOUR BOX (GM-09) needs at least ${RULES.custom.minLeadDays} days. In a mixed order the slowest box sets the earliest date.`,
     "",
     "## Payment",
     "",

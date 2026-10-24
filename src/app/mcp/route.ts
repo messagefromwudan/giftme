@@ -15,6 +15,7 @@ import {
 } from "@/lib/agent";
 import { CHECKOUT_CLOSED_MESSAGE, checkoutOpen, OrderError, orderInputSchema } from "@/lib/orders";
 import { normalizeEmail } from "@/lib/codes";
+import { RULES } from "@/lib/catalog";
 import { QuoteError } from "@/lib/pricing";
 import { clientIp, LIMITS, rateLimit } from "@/lib/ratelimit";
 import { CORS, preflight } from "@/lib/http";
@@ -72,7 +73,7 @@ const handler = createMcpHandler(
       {
         title: "Build a YOUR BOX (GM-09)",
         description:
-          "Prepare a custom GM-09 box around a gift the customer names. Price is 360 MDL + the gift, which the GiftMe team quotes after the order. Never estimate the gift price yourself.",
+          `Prepare a custom GM-09 box around a gift the customer names. Price is 360 MDL + the gift, which the GiftMe team quotes after the order. Never estimate the gift price yourself. The delivery date must be at least ${RULES.custom.minLeadDays} days from today.`,
         inputSchema: customBoxInput,
         annotations: { readOnlyHint: true },
       },
@@ -84,7 +85,7 @@ const handler = createMcpHandler(
       {
         title: "Get a quote",
         description:
-          "Exact server-side price for boxes: subtotal, the single best offer (offers never stack), delivery and total in MDL. Always use this instead of computing prices.",
+          `Exact server-side price for boxes: subtotal, the single best offer (offers never stack), delivery and total in MDL, plus the allowed delivery dates for these boxes. Delivery in Chișinău is free only over ${RULES.delivery.freeOverChisinau} MDL after discount. Always use this instead of computing prices.`,
         inputSchema: quoteInput,
         annotations: { readOnlyHint: true },
       },
@@ -104,6 +105,7 @@ const handler = createMcpHandler(
         description: [
           "Create an order for the human. ONLY call this after the human explicitly confirmed the boxes, price, recipient,",
           "delivery address and date, and agreed to the terms (https://www.giftme.site/termeni/).",
+          `The date must be within get_quote's delivery_dates (GM-09: at least ${RULES.custom.minLeadDays} days ahead, other boxes ${RULES.delivery.minLeadDays}).`,
           "The order is created as awaiting_approval: we email the buyer a confirmation link and nothing is processed until they click it.",
           "Use a new idempotency_key per intended order and reuse it when retrying.",
           PRACTICE_NOTICE.en,

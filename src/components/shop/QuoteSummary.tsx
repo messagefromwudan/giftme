@@ -1,6 +1,6 @@
 "use client";
 
-import type { Locale } from "@/lib/catalog";
+import { RULES, type Locale } from "@/lib/catalog";
 import type { Quote } from "@/lib/pricing";
 import { getDict } from "@/i18n";
 
@@ -17,7 +17,8 @@ export function QuoteSummary({
 }) {
   const t = getDict(lang).shop;
   if (!quote) return <p className="text-sm text-muted">{loading ? t.loading : ""}</p>;
-  const missing = 800 - quote.discountedSubtotal;
+  // Free only when strictly over the threshold: at exactly 800 MDL one more leu is still missing.
+  const missing = RULES.delivery.freeOverChisinau + 1 - quote.discountedSubtotal;
   const deliveryText =
     quote.delivery.reason === "included_in_custom_box"
       ? t.deliveryIncluded

@@ -301,6 +301,10 @@ export const BOXES: Box[] = [
 
 export const CUSTOM_BOX_ID: BoxId = "GM-09";
 
+/** Earliest delivery, in days from today, for one box. */
+export const boxMinLeadDays = (box: Box): number =>
+  box.custom ? RULES.custom.minLeadDays : RULES.delivery.minLeadDays;
+
 /** A YYYY-MM-DD rule date in words: "27 iunie 2027" / "27 June 2027". */
 export const ruleDate = (iso: string, lang: Locale) =>
   new Intl.DateTimeFormat(lang === "ro" ? "ro-RO" : "en-GB", {
@@ -322,10 +326,14 @@ export const RULES = {
   timeZone: "Europe/Chisinau",
   delivery: {
     fee: 60,
-    /** Free delivery in Chișinău when the subtotal AFTER discount is at least this. */
-    freeThresholdChisinau: 800,
+    /** Free delivery in Chișinău only when the subtotal AFTER discount is STRICTLY MORE than this
+     *  (exactly 800 MDL still pays the fee). */
+    freeOverChisinau: 800,
     /** Decision 3: 60 MDL anywhere in Moldova, never free outside Chișinău. */
     deliversOutsideChisinau: true,
+    /** Delivery date window, in days from today (Chișinău time). GM-09 has its own minimum. */
+    minLeadDays: 2,
+    maxLeadDays: 180,
   },
   custom: {
     /** GM-09 surprise delivery (with confetti) is Chișinău only. */
@@ -334,10 +342,12 @@ export const RULES = {
     handlingFee: 0,
     /** Gifts quoted above this need written approval from the coordinator. */
     maxGiftValueWithoutApproval: 5000,
+    /** GM-09 needs time to quote, get paid and buy the gift: earliest delivery date. */
+    minLeadDays: 5,
   },
   /** Every order is a practice-company order: no real payment or delivery. */
   simulatedOrders: true,
-  /** Messages and delivery data are deleted this many days after the PASS-IT-ON code is revealed. */
+  /** QR messages are deleted this many days after the PASS-IT-ON code is revealed. */
   dataRetentionDaysAfterReveal: 30,
   /** Messages whose PASS-IT-ON code was never revealed are deleted on this date (Chișinău time). */
   unrevealedMessagesDeleteOn: "2027-06-27",
@@ -404,8 +414,8 @@ export const OFFER_NOTES: Text[] = [
     en: "Offers don't stack: we automatically apply the one that saves you the most.",
   },
   {
-    ro: "Livrare gratuită în Chișinău pentru comenzi de la 800 MDL (după reducere); se combină cu orice ofertă.",
-    en: "Free delivery in Chișinău for orders from 800 MDL (after discount); combines with any offer.",
+    ro: "Livrare gratuită în Chișinău pentru comenzi de peste 800 MDL (după reducere); se combină cu orice ofertă.",
+    en: "Free delivery in Chișinău for orders over 800 MDL (after discount); combines with any offer.",
   },
   {
     ro: "Ofertele sunt valabile până pe 28 mai 2027.",

@@ -1,5 +1,5 @@
 import "server-only";
-import { SITE, type Locale } from "./catalog";
+import { CUSTOM_BOX_ID, SITE, type Locale } from "./catalog";
 import { deliveryDateBounds } from "./orders";
 import { searchBoxes } from "./agent";
 import { llmConfigured, llmInfo, LlmUnavailableError, runToolAgent, type LlmTool } from "./llm";
@@ -169,7 +169,7 @@ export async function runLlmAgent(
 ): Promise<boolean> {
   if (!llmConfigured()) return false;
   const customer = demoCustomer(runId);
-  const request = scenario.request(addDays(deliveryDateBounds().min, 3));
+  const request = scenario.request(addDays(deliveryDateBounds(new Date(), [{ boxId: CUSTOM_BOX_ID }]).min, 3));
   let order: { id?: string; status?: string; total?: number; trackingUrl?: string } = {};
   let started = false;
   const start = () => {
@@ -243,7 +243,7 @@ function addDays(date: string, days: number) {
 
 export async function runScriptedAgent(scenario: Scenario, origin: string, lang: Locale, emit: (e: DemoEvent) => void, runId: string, note?: string) {
   const customer = demoCustomer(runId);
-  const date = addDays(deliveryDateBounds().min, 3);
+  const date = addDays(deliveryDateBounds(new Date(), [{ boxId: CUSTOM_BOX_ID }]).min, 3);
   const ro = lang === "ro";
   emit({ type: "start", mode: "scripted", scenario: scenario.request(date), note });
   const call = async (method: "GET" | "POST", path: string, body?: unknown, idem?: string) => {

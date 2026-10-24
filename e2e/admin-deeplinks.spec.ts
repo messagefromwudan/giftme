@@ -5,7 +5,7 @@ const OK = "http://localhost:3300";
 const DOWN = "http://localhost:3301";
 
 const date = () => {
-  const d = new Date(Date.now() + 5 * 86_400_000);
+  const d = new Date(Date.now() + 7 * 86_400_000); // past GM-09's 5-day minimum in any time zone
   return d.toISOString().slice(0, 10);
 };
 

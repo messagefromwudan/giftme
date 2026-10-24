@@ -51,8 +51,9 @@ export default async function Terms({ params }: PageProps<"/[lang]/termeni">) {
 
       <h2>Livrare</h2>
       <p>
-        În Chișinău, livrarea costă {RULES.delivery.fee} MDL și este gratuită pentru comenzile de la{" "}
-        {RULES.delivery.freeThresholdChisinau} MDL (suma de după reducere). În restul Moldovei, livrarea costă{" "}
+        În Chișinău, livrarea costă {RULES.delivery.fee} MDL și este gratuită pentru comenzile de peste{" "}
+        {RULES.delivery.freeOverChisinau} MDL (suma de după reducere; la exact {RULES.delivery.freeOverChisinau} MDL
+        livrarea costă {RULES.delivery.fee} MDL). În restul Moldovei, livrarea costă{" "}
         {RULES.delivery.fee} MDL. Livrarea surpriză YOUR BOX este inclusă în taxa de serviciu și se face doar în
         Chișinău.
       </p>
@@ -67,7 +68,8 @@ export default async function Terms({ params }: PageProps<"/[lang]/termeni">) {
       <ol className="mt-3 list-decimal space-y-2 pl-5">
         <li>
           <strong>Serviciu.</strong> {SITE.legalName} pregătește și livrează o cutie personalizată cu cadoul ales
-          de client. Taxa de serviciu este {GM09.price} MDL; cadoul se cotează separat.
+          de client. Taxa de serviciu este {GM09.price} MDL; cadoul se cotează separat. Data livrării trebuie să
+          fie la cel puțin {RULES.custom.minLeadDays} zile de la plasarea comenzii.
         </li>
         <li>
           <strong>Cotație și plată.</strong> Echipa GiftMe trimite clientului prețul cadoului, fără taxă de procesare
@@ -91,7 +93,7 @@ export default async function Terms({ params }: PageProps<"/[lang]/termeni">) {
           <strong>Anulare.</strong> Clientul poate anula gratuit comanda înainte de cumpărarea cadoului.
         </li>
         <li>
-          <strong>Date.</strong> Mesajele audio/video și datele de livrare se folosesc doar pentru comandă și se
+          <strong>Date.</strong> Mesajele audio/video se folosesc doar pentru comandă și se
           șterg la {RULES.dataRetentionDaysAfterReveal} de zile după ce destinatarul dezvăluie codul PASS-IT-ON.
           Mesajele al căror cod nu a fost dezvăluit niciodată se șterg pe{" "}
           {ruleDate(RULES.unrevealedMessagesDeleteOn, "ro")}.

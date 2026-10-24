@@ -96,6 +96,16 @@ function discountFor(id: OfferId, subtotal: number): number {
   return Math.min(raw, subtotal);
 }
 
+/** Delivery fee. Free in Chișinău only when the subtotal after discount is STRICTLY over the
+ *  threshold (exactly 800 MDL pays the fee); never free elsewhere in Moldova. */
+export function deliveryFor(zone: Zone, discountedSubtotal: number, onlyCustom = false): Quote["delivery"] {
+  if (zone === "chisinau" && onlyCustom) return { fee: 0, reason: "included_in_custom_box" };
+  if (zone === "chisinau" && discountedSubtotal > RULES.delivery.freeOverChisinau) {
+    return { fee: 0, reason: "free_over_threshold_chisinau" };
+  }
+  return { fee: RULES.delivery.fee, reason: "standard_fee" };
+}
+
 export function quote(input: QuoteInput): Quote {
   const now = input.now ?? new Date();
 
@@ -168,17 +178,7 @@ export function quote(input: QuoteInput): Quote {
 
   const discountedSubtotal = subtotal - (offer?.discount ?? 0);
 
-  let delivery: Quote["delivery"];
-  if (input.zone === "chisinau" && onlyCustom) {
-    delivery = { fee: 0, reason: "included_in_custom_box" };
-  } else if (
-    input.zone === "chisinau" &&
-    discountedSubtotal >= RULES.delivery.freeThresholdChisinau
-  ) {
-    delivery = { fee: 0, reason: "free_over_threshold_chisinau" };
-  } else {
-    delivery = { fee: RULES.delivery.fee, reason: "standard_fee" };
-  }
+  const delivery = deliveryFor(input.zone, discountedSubtotal, onlyCustom);
 
   return {
     currency: "MDL",

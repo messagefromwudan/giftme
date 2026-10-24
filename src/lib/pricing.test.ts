@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { quote, QuoteError } from "./pricing";
+import { deliveryFor, quote, QuoteError } from "./pricing";
 
 const now = new Date("2026-11-02T10:00:00+02:00");
 const q = (items: [string, number][], extra: Partial<Parameters<typeof quote>[0]> = {}) =>
@@ -19,7 +19,7 @@ describe("quote", () => {
     expect(r.subtotal).toBe(1020);
     expect(r.offer).toMatchObject({ id: "DUO", discount: 102 });
     expect(r.discountedSubtotal).toBe(918);
-    expect(r.delivery.fee).toBe(0); // ≥ 800 after discount
+    expect(r.delivery.fee).toBe(0); // over 800 after discount
     expect(r.total).toBe(918);
   });
 
@@ -29,6 +29,27 @@ describe("quote", () => {
     expect(r.discountedSubtotal).toBe(792);
     expect(r.delivery.fee).toBe(60);
     expect(r.total).toBe(852);
+  });
+
+  it("free delivery in Chișinău is strictly over 800 MDL: 799 and 800 pay, 801 is free", () => {
+    expect(deliveryFor("chisinau", 799)).toEqual({ fee: 60, reason: "standard_fee" });
+    expect(deliveryFor("chisinau", 800)).toEqual({ fee: 60, reason: "standard_fee" });
+    expect(deliveryFor("chisinau", 801)).toEqual({ fee: 0, reason: "free_over_threshold_chisinau" });
+    // Never free outside Chișinău.
+    expect(deliveryFor("moldova", 801)).toEqual({ fee: 60, reason: "standard_fee" });
+  });
+
+  it("whole quotes at the boundary: 801 MDL free, exactly 800 MDL pays delivery", () => {
+    // DUO: 440 + 450 = 890, −89 = 801 → free.
+    const over = q([["GM-01", 1], ["GM-05", 1]]);
+    expect(over.discountedSubtotal).toBe(801);
+    expect(over.delivery.fee).toBe(0);
+    expect(over.total).toBe(801);
+    // After the offers end: 440 + 360 = 800 exactly, no discount → 60 MDL delivery.
+    const exact = q([["GM-01", 1], ["GM-09", 1]], { now: new Date("2027-06-01T10:00:00+03:00") });
+    expect(exact.discountedSubtotal).toBe(800);
+    expect(exact.delivery).toEqual({ fee: 60, reason: "standard_fee" });
+    expect(exact.total).toBe(860);
   });
 
   it("TRIO covers 3–9 boxes, ECHIPĂ from 10", () => {

@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     const parsed = schema.safeParse(await readJson(req));
     if (!parsed.success) return json({ error: "INVALID_INPUT", details: z.flattenError(parsed.error) }, 400);
     const { quote, code } = await priceOrder(parsed.data);
-    return json({ quote, code, checkoutOpen: checkoutOpen(), deliveryDates: deliveryDateBounds() });
+    return json({ quote, code, checkoutOpen: checkoutOpen(), deliveryDates: deliveryDateBounds(new Date(), parsed.data.items) });
   } catch (e) {
     return errorResponse(e);
   }

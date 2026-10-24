@@ -64,6 +64,7 @@ export default async function BoxPage({ params }: PageProps<"/[lang]/cutii/[id]"
                 <>
                   <p className="font-display text-3xl font-black">{t.boxes.customPrice}</p>
                   <p className="text-sm text-muted">{t.boxes.customNote}</p>
+                  <p className="mt-1 text-sm font-medium">{t.boxes.customLead}</p>
                 </>
               ) : (
                 <p className="font-display text-4xl font-black">{formatMDL(box.price)}</p>
