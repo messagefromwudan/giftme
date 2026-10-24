@@ -70,6 +70,11 @@ export default async function BoxPage({ params }: PageProps<"/[lang]/cutii/[id]"
               )}
             </div>
 
+            <div className="mt-4 space-y-4">
+              <AddToCart boxId={box.id} lang={lang} />
+              <PracticeNotice lang={lang} compact />
+            </div>
+
             <h2 className="mt-8 text-2xl">{t.boxes.contents}</h2>
             <ul className="mt-3 space-y-2">
               {box.contents.map((c) => (
@@ -109,11 +114,6 @@ export default async function BoxPage({ params }: PageProps<"/[lang]/cutii/[id]"
                 </li>
               ))}
             </ul>
-
-            <div className="mt-10 space-y-4">
-              <AddToCart boxId={box.id} lang={lang} />
-              <PracticeNotice lang={lang} compact />
-            </div>
           </div>
         </div>
       </div>
