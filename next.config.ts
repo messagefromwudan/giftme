@@ -41,6 +41,10 @@ const nextConfig: NextConfig = {
   // many HTTP clients used by AI agents don't follow a 308 on POST.
   skipTrailingSlashRedirect: true,
   poweredByHeader: false,
+  images: {
+    // AVIF where the browser supports it, WebP otherwise; the JPEG in /public is the last fallback.
+    formats: ["image/avif", "image/webp"],
+  },
   experimental: {
     // The build cache served stale Tailwind CSS after edits to globals.css; builds are fast without it.
     turbopackFileSystemCacheForBuild: false,

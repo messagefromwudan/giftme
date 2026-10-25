@@ -9,6 +9,7 @@ import {
   RULES,
   SITE,
   boxMinLeadDays,
+  boxPhotoUrl,
   getBox,
   type Box,
   type Locale,
@@ -45,6 +46,8 @@ export function boxForAgent(box: Box, lang: Locale = "en") {
       : null,
     custom_gift: Boolean(box.custom),
     tagline: box.tagline[lang],
+    image: boxPhotoUrl(box),
+    image_alt: box.photo?.alt[lang] ?? null,
     contents: box.contents.map((c) => c[lang]),
     occasions: box.occasions.map((o) => o[lang]),
     tags: box.tags,
@@ -195,7 +198,7 @@ export async function agentTrack(id: string, proof: { email?: string; token?: st
 export function catalogDocument() {
   return {
     schema_version: "1.0",
-    updated: "2026-10-24",
+    updated: "2026-10-25",
     store: {
       name: SITE.name,
       legal_name: SITE.legalName,
@@ -218,6 +221,9 @@ export function catalogDocument() {
       price_mdl: b.price,
       price_type: b.custom ? "service_fee_plus_human_quoted_gift" : "fixed",
       tagline: b.tagline,
+      image: b.photo
+        ? { url: boxPhotoUrl(b), width: b.photo.width, height: b.photo.height, alt: b.photo.alt }
+        : null,
       contents: b.contents,
       occasions: b.occasions,
       tags: b.tags,

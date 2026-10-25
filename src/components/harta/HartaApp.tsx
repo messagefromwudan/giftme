@@ -6,7 +6,7 @@ import { getBox, type Locale } from "@/lib/catalog";
 import type { Answers, Proposal } from "@/lib/harta";
 import { useCart } from "@/lib/cart";
 import { getDict, href } from "@/i18n";
-import { BoxArt } from "../BoxArt";
+import { BoxImage } from "../BoxImage";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type Shown = Msg & { proposal?: Proposal | null };
@@ -194,7 +194,15 @@ function ProposalCard({ p, lang, compact }: { p: Proposal; lang: Locale; compact
 
   return (
     <div className={`overflow-hidden rounded-3xl bg-white text-ink ${compact ? "" : "sm:flex"}`}>
-      {first && <BoxArt box={first} label="" crop className={`w-full ${compact ? "aspect-[2/1]" : "aspect-[4/3] sm:w-56 sm:shrink-0"}`} />}
+      {first && (
+        <BoxImage
+          box={first}
+          lang={lang}
+          decorative
+          sizes={compact ? "400px" : "(min-width: 640px) 224px, 92vw"}
+          className={`w-full ${compact ? "aspect-[2/1]" : "aspect-[4/3] sm:w-56 sm:shrink-0"}`}
+        />
+      )}
       <div className="flex-1 space-y-3 p-5">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted">{t.proposalTitle}</p>
         {p.items.map((i) => (

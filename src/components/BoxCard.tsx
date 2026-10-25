@@ -1,14 +1,19 @@
 import Link from "next/link";
 import type { Box, Locale } from "@/lib/catalog";
 import { getDict, href } from "@/i18n";
-import { BoxArt } from "./BoxArt";
+import { BoxImage } from "./BoxImage";
 import { formatMDL } from "./SiteChrome";
 
 export function BoxCard({ box, lang }: { box: Box; lang: Locale }) {
   const t = getDict(lang).boxes;
   return (
     <li className="group relative flex flex-col overflow-hidden rounded-3xl bg-white ring-1 ring-black/10 transition hover:-translate-y-1 hover:shadow-xl">
-      <BoxArt box={box} label="" crop className="aspect-[4/3] w-full sm:aspect-square" />
+      <BoxImage
+        box={box}
+        lang={lang}
+        sizes="(min-width: 1152px) 368px, (min-width: 1024px) 31vw, (min-width: 640px) 46vw, 92vw"
+        className="aspect-[4/3] w-full"
+      />
       <div className="flex flex-1 flex-col gap-2 p-5">
         <p className="text-xs font-semibold tracking-widest text-muted">{box.id}</p>
         <h3 className="text-2xl">

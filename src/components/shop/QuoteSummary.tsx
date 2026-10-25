@@ -1,19 +1,23 @@
 "use client";
 
-import { RULES, type Locale } from "@/lib/catalog";
+import { RULES, getBox, type Locale } from "@/lib/catalog";
 import type { Quote } from "@/lib/pricing";
 import { getDict } from "@/i18n";
+import { BoxImage } from "../BoxImage";
 
 export function QuoteSummary({
   lang,
   quote,
   loading,
   showFreeHint = true,
+  thumbs = false,
 }: {
   lang: Locale;
   quote: Quote | null;
   loading?: boolean;
   showFreeHint?: boolean;
+  /** Small box photo next to each line (checkout and order pages; the cart list shows its own). */
+  thumbs?: boolean;
 }) {
   const t = getDict(lang).shop;
   if (!quote) return <p className="text-sm text-muted">{loading ? t.loading : ""}</p>;
@@ -29,14 +33,20 @@ export function QuoteSummary({
   return (
     <div aria-live="polite" aria-busy={loading} className={loading ? "opacity-60 transition" : "transition"}>
       <dl className="space-y-2 text-[0.95rem]">
-        {quote.lines.map((l) => (
-          <div key={l.boxId} className="flex justify-between gap-4">
-            <dt>
-              {l.quantity} × {l.name}
-            </dt>
-            <dd className="whitespace-nowrap">{l.lineTotal} MDL</dd>
-          </div>
-        ))}
+        {quote.lines.map((l) => {
+          const box = thumbs ? getBox(l.boxId) : undefined;
+          return (
+            <div key={l.boxId} className={`flex justify-between gap-4 ${box ? "items-center" : ""}`}>
+              <dt className={box ? "flex items-center gap-3" : undefined}>
+                {box && <BoxImage box={box} lang={lang} decorative sizes="48px" className="size-12 shrink-0 rounded-xl" />}
+                <span>
+                  {l.quantity} × {l.name}
+                </span>
+              </dt>
+              <dd className="whitespace-nowrap">{l.lineTotal} MDL</dd>
+            </div>
+          );
+        })}
         <div className="flex justify-between gap-4 border-t border-black/10 pt-2">
           <dt>{t.subtotal}</dt>
           <dd>{quote.subtotal} MDL</dd>

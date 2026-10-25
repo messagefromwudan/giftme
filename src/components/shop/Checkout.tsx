@@ -381,7 +381,7 @@ export function Checkout({ lang }: { lang: Locale }) {
       </div>
 
       <aside className="h-fit rounded-3xl bg-cream p-6 lg:sticky lg:top-24">
-        <QuoteSummary lang={lang} quote={data?.quote ?? null} loading={loading} showFreeHint={f.zone === "chisinau"} />
+        <QuoteSummary lang={lang} quote={data?.quote ?? null} loading={loading} showFreeHint={f.zone === "chisinau"} thumbs />
       </aside>
     </div>
   );

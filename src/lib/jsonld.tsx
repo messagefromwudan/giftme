@@ -1,4 +1,4 @@
-import { RULES, SITE, type Box, type Locale } from "./catalog";
+import { RULES, SITE, boxPhotoUrl, type Box, type Locale } from "./catalog";
 
 export function JsonLd({ data }: { data: object }) {
   return (
@@ -37,7 +37,7 @@ export function productLd(box: Box, lang: Locale) {
     name: box.name,
     description: box.tagline[lang],
     url,
-    image: `${url}opengraph-image/`,
+    image: box.photo ? [boxPhotoUrl(box), `${url}opengraph-image/`] : `${url}opengraph-image/`,
     brand: { "@type": "Brand", name: SITE.name },
     category: lang === "ro" ? "Cutii cadou personalizate" : "Personalized gift boxes",
     additionalProperty: box.contents.map((c) => ({

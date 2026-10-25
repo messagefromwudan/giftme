@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getBox, type Locale } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import { getDict, href } from "@/i18n";
-import { BoxArt } from "../BoxArt";
+import { BoxImage } from "../BoxImage";
 import { QuoteSummary } from "./QuoteSummary";
 import { useQuote } from "./useQuote";
 import { PracticeNotice } from "./PracticeNotice";
@@ -33,7 +33,7 @@ export function CartView({ lang }: { lang: Locale }) {
           if (!box) return null;
           return (
             <li key={item.boxId} className="flex gap-4 p-4">
-              <BoxArt box={box} label="" className="size-20 shrink-0 rounded-2xl" />
+              <BoxImage box={box} lang={lang} decorative sizes="80px" className="size-20 shrink-0 rounded-2xl" />
               <div className="flex flex-1 flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold tracking-widest text-muted">{box.id}</p>

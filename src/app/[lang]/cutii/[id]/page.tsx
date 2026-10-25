@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BOXES, EVERY_BOX_INCLUDES, getBox } from "@/lib/catalog";
 import { getDict, hasLocale, href, LOCALES } from "@/i18n";
-import { BoxArt } from "@/components/BoxArt";
+import { BoxImage } from "@/components/BoxImage";
 import { PageShell } from "@/components/PageShell";
 import { formatMDL } from "@/components/SiteChrome";
 import { JsonLd, productLd } from "@/lib/jsonld";
@@ -49,8 +49,15 @@ export default async function BoxPage({ params }: PageProps<"/[lang]/cutii/[id]"
 
         <div className="mt-6 grid gap-10 md:grid-cols-2">
           <figure>
-            <BoxArt box={box} label={`${box.name}: ${t.boxes.photoSoon}`} className="aspect-square w-full rounded-3xl" />
-            <figcaption className="mt-2 text-xs text-muted">{t.boxes.photoSoon}</figcaption>
+            <BoxImage
+              box={box}
+              lang={lang}
+              fit="natural"
+              eager
+              sizes="(min-width: 1152px) 552px, (min-width: 768px) 46vw, 92vw"
+              className="rounded-3xl"
+            />
+            {!box.photo && <figcaption className="mt-2 text-xs text-muted">{t.boxes.photoSoon}</figcaption>}
           </figure>
 
           <div>

@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { BOXES, EVERY_BOX_INCLUDES, OFFERS, RULES, SITE, boxMinLeadDays } from "./catalog";
+import { BOXES, EVERY_BOX_INCLUDES, OFFERS, RULES, SITE, boxMinLeadDays, boxPhotoUrl } from "./catalog";
 import { checkoutOpen, orderInputSchema } from "./orders";
 import { quoteInput, PRACTICE_NOTICE } from "./agent";
 
@@ -209,6 +209,7 @@ export function llmsFullTxt() {
       `- Delivery: ${b.custom ? "surprise home delivery in Chișinău only, included" : "Chișinău or anywhere in Moldova"}`,
       `- Minimum lead time: ${boxMinLeadDays(b)} days (earliest delivery date from today)`,
       `- Page: ${SITE.url}/en/cutii/${b.slug}/`,
+      ...(b.photo ? [`- Photo: ${boxPhotoUrl(b)} (${b.photo.alt.en})`] : []),
       `- Romanian: ${b.tagline.ro}`,
       "",
     );

@@ -42,8 +42,18 @@ export type Box = {
   /** Tags used by search_boxes and the on-site agent. */
   tags: string[];
   motif: Motif;
-  /** Path under /public once real photos arrive; until then the illustrated placeholder is used. */
-  photo?: string;
+  /** Real box photo under /public; boxes without one show the illustrated placeholder (BoxArt). */
+  photo?: BoxPhoto;
+};
+
+export type BoxPhoto = {
+  /** Path under /public. */
+  src: string;
+  /** Pixel size of the file: next/image needs it and catalog.json publishes it. */
+  width: number;
+  height: number;
+  /** Describes what is in the photo. No third-party brand names, even if a label shows one. */
+  alt: Text;
 };
 
 export const SITE = {
@@ -101,6 +111,15 @@ export const BOXES: Box[] = [
     ],
     tags: ["friends", "graduation", "birthday", "fun", "memories"],
     motif: "friends",
+    photo: {
+      src: "/img/cutii/gm-01.jpg",
+      width: 595,
+      height: 358,
+      alt: {
+        ro: "Cutia roșie BOX F-R-I-E-N-D-S deschisă, cu ciocolată cu alune, gustări, albume, o clachetă de film „Senior Year” și jocul de cărți „Adevăr sau provocare”.",
+        en: "The red BOX F-R-I-E-N-D-S open, with hazelnut chocolate, snacks, albums, a “Senior Year” film clapperboard and the Truth-or-Dare card game.",
+      },
+    },
   },
   {
     id: "GM-02",
@@ -123,6 +142,15 @@ export const BOXES: Box[] = [
     ],
     tags: ["romance", "couple", "anniversary", "valentine", "love", "experience"],
     motif: "romance",
+    photo: {
+      src: "/img/cutii/gm-02.jpg",
+      width: 592,
+      height: 396,
+      alt: {
+        ro: "Cutia roșie BOX ROMANCE deschisă, cu kitul de făcut lumânări, tuburi de vopsea și pensule, o plachetă muzicală cu fotografia unui cuplu și două lumânări în formă de inimă.",
+        en: "The red BOX ROMANCE open, with the candle-making kit, paint tubes and brushes, a music plaque with a couple's photo and two heart-shaped candles.",
+      },
+    },
   },
   {
     id: "GM-03",
@@ -147,6 +175,15 @@ export const BOXES: Box[] = [
     ],
     tags: ["corporate", "colleagues", "business", "team", "thank-you", "office"],
     motif: "corporate",
+    photo: {
+      src: "/img/cutii/gm-03.jpg",
+      width: 1024,
+      height: 1024,
+      alt: {
+        ro: "Cutia roșie BOX CORPORATE pe un birou, cu o cană albă, ceai într-o cutie metalică, un infuzor, un pix metalic, trei pungi cu nuci și semințe, bile anti-stres și un puzzle din lemn.",
+        en: "The red BOX CORPORATE on a desk, with a white mug, tea in a metal tin, an infuser, a metal pen, three bags of nuts and seeds, stress balls and a wooden puzzle.",
+      },
+    },
   },
   {
     id: "GM-04",
@@ -170,6 +207,15 @@ export const BOXES: Box[] = [
     ],
     tags: ["creative", "art", "hobby", "crafts", "birthday", "teen"],
     motif: "creative",
+    photo: {
+      src: "/img/cutii/gm-04.jpg",
+      width: 594,
+      height: 364,
+      alt: {
+        ro: "Cutia roșie BOX CREATIVE deschisă, cu un copac de sakura din piese de construcție, o carte de desenat, un set de markere acrilice și figurine croșetate.",
+        en: "The red BOX CREATIVE open, with a sakura tree made of building blocks, a doodle book, a set of acrylic markers and crocheted figures.",
+      },
+    },
   },
   {
     id: "GM-05",
@@ -192,6 +238,15 @@ export const BOXES: Box[] = [
     ],
     tags: ["beauty", "self-care", "pampering", "birthday", "women's day"],
     motif: "beauty",
+    photo: {
+      src: "/img/cutii/gm-05.jpg",
+      width: 809,
+      height: 503,
+      alt: {
+        ro: "Cutia roșie BOX BEAUTY deschisă, cu două genți de machiaj cu monogramă, o oglindă compactă gravată, măști de față, gel de duș, o bombă de baie, un scrub, un ruj și un parfum.",
+        en: "The red BOX BEAUTY open, with two monogrammed makeup bags, an engraved compact mirror, face masks, shower gel, a bath bomb, a scrub, a lipstick and a perfume.",
+      },
+    },
   },
   {
     id: "GM-06",
@@ -216,6 +271,15 @@ export const BOXES: Box[] = [
     ],
     tags: ["self-care", "relax", "encouragement", "wellbeing", "for-me"],
     motif: "self",
+    photo: {
+      src: "/img/cutii/gm-06.jpg",
+      width: 593,
+      height: 370,
+      alt: {
+        ro: "Cutia roșie BOX PENTRU TINE deschisă, cu cinci cutii de ceai, ciocolată artizanală, un jurnal de self-care și cărți cu afirmații.",
+        en: "The red BOX PENTRU TINE open, with five tins of tea, artisan chocolate, a self-care journal and affirmation cards.",
+      },
+    },
   },
   {
     id: "GM-07",
@@ -240,6 +304,15 @@ export const BOXES: Box[] = [
     ],
     tags: ["teacher", "school", "thank-you", "graduation", "class"],
     motif: "teacher",
+    photo: {
+      src: "/img/cutii/gm-07.jpg",
+      width: 595,
+      height: 389,
+      alt: {
+        ro: "Cutia roșie BOX PROFESOR deschisă, cu o agendă personalizată și pixuri, un jurnal pentru profesor, o suculentă în ghiveci cu text personalizat, gustări și pliculețe de ceai.",
+        en: "The red BOX PROFESOR open, with a personalized planner and pens, a teacher's journal, a potted succulent with custom text, snacks and tea bags.",
+      },
+    },
   },
   {
     id: "GM-08",
@@ -265,6 +338,15 @@ export const BOXES: Box[] = [
     ],
     tags: ["countdown", "holidays", "winter", "birthday", "surprise"],
     motif: "special",
+    photo: {
+      src: "/img/cutii/gm-08.jpg",
+      width: 595,
+      height: 381,
+      alt: {
+        ro: "Cutia roșie BOX SPECIAL cu cinci compartimente, „Ziua 1” până la „Ziua 5”: ciocolată caldă, o lumânare mini, ciocolată artizanală, o felicitare și un ornament gravat din lemn.",
+        en: "The red BOX SPECIAL with five compartments, “Day 1” to “Day 5”: hot chocolate, a mini candle, artisan chocolate, a postcard and an engraved wooden ornament.",
+      },
+    },
   },
   {
     id: "GM-09",
@@ -317,6 +399,11 @@ export const ruleDate = (iso: string, lang: Locale) =>
 export function getBox(id: string): Box | undefined {
   const norm = id.trim().toUpperCase();
   return BOXES.find((b) => b.id === norm || b.slug.toUpperCase() === norm);
+}
+
+/** Absolute URL of the box photo for catalog.json, llms-full.txt and JSON-LD; null while there is none. */
+export function boxPhotoUrl(box: Box): string | null {
+  return box.photo ? `${SITE.url}${box.photo.src}` : null;
 }
 
 /** Business rules used by the pricing engine. Kept as data so catalog.json can publish them verbatim. */

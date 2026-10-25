@@ -102,7 +102,7 @@ export function OrderCard({ lang, order, token }: { lang: Locale; order: PublicO
         )}
       </div>
       <aside className="h-fit space-y-4 rounded-3xl bg-cream p-6">
-        <QuoteSummary lang={lang} quote={order.quote} showFreeHint={false} />
+        <QuoteSummary lang={lang} quote={order.quote} showFreeHint={false} thumbs />
         <PracticeNotice lang={lang} compact />
       </aside>
     </div>
