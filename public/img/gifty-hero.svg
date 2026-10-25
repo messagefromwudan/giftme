@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 440" role="img" aria-label="Gifty, mascota GiftMe">
+      <path d="M300 128 l7 15 l15 7 l-15 7 l-7 15 l-7 -15 l-15 -7 l15 -7 z" fill="#e11d2e"/>
+      <path d="M52 108 l5 11 l11 5 l-11 5 l-5 11 l-5 -11 l-11 -5 l11 -5 z" fill="#111111"/>
+      <path d="M322 330 l4 9 l9 4 l-9 4 l-4 9 l-4 -9 l-9 -4 l9 -4 z" fill="#111111"/>
+      <g transform="rotate(-6 180 250)">
+        <ellipse cx="180" cy="400" rx="106" ry="12" fill="#111111" opacity="0.18"/>
+        <rect x="124" y="352" width="30" height="34" rx="12" fill="#111111"/>
+        <rect x="206" y="352" width="30" height="34" rx="12" fill="#111111"/>
+        <path d="M180 170 C128 140 136 94 164 102 C174 105 180 113 180 120 C180 113 186 105 196 102 C224 94 232 140 180 170 Z" fill="#e11d2e" stroke="#111111" stroke-width="7" stroke-linejoin="round"/>
+        <rect x="70" y="164" width="220" height="196" rx="28" fill="#ffffff" stroke="#111111" stroke-width="7"/>
+        <rect x="70" y="164" width="220" height="52" rx="26" fill="#e11d2e" stroke="#111111" stroke-width="7"/>
+        <circle cx="136" cy="268" r="13" fill="#111111"/>
+        <path d="M212 270 Q230 254 248 270" fill="none" stroke="#111111" stroke-width="7" stroke-linecap="round"/>
+        <path d="M156 304 Q180 330 204 304" fill="none" stroke="#111111" stroke-width="7" stroke-linecap="round"/>
+        <circle cx="104" cy="300" r="13" fill="#e11d2e" opacity="0.35"/>
+        <circle cx="256" cy="300" r="13" fill="#e11d2e" opacity="0.35"/>
+      </g>
+    </svg>

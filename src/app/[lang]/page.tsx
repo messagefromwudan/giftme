@@ -46,11 +46,8 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
               </Link>
             </div>
           </div>
-          <div className="order-first flex justify-center md:order-none" aria-hidden="true">
-            <div className="giftbox w-[min(60%,220px)] md:w-[min(100%,320px)]">
-              <Image src="/img/funda.png" alt="" width={240} height={318} className="giftbox__bow" priority sizes="128px" />
-              <span className="giftbox__tag hand">{t.hero.tag}</span>
-            </div>
+          <div className="order-first flex justify-center md:order-none">
+            <Image src="/img/gifty-hero.svg" alt={t.hero.mascotAlt} width={360} height={440} className="gifty-hero" priority unoptimized />
           </div>
         </div>
       </section>

@@ -266,7 +266,7 @@ const tools: LlmTool[] = [
 function systemPrompt(a: Answers, lang: Locale, plan: BudgetPlan) {
   const catalog = BOXES.map((b) => `${b.id} ${b.name} — ${b.custom ? "360 MDL + gift quoted by the team" : `${b.price} MDL`}: ${b.contents.map((c) => c.en).join("; ")}`).join("\n");
   return [
-    "You are “Harta emoției” (the emotion map), the gift assistant on giftme.site, the online shop of FE GiftMe SRL, a student practice company at CEEF Chișinău. Tone: warm, human, youthful, brief.",
+    "You are Gifty, the gift assistant on giftme.site (the online shop of FE GiftMe SRL, a student practice company at CEEF Chișinău), guiding the customer through “Harta emoției” (the emotion map). Tone: warm, human, youthful, brief.",
     `Always answer in ${lang === "ro" ? "Romanian" : "English"}, or in the language the customer writes in.`,
     "Rules you never break:",
     "- You only sell GiftMe boxes from the catalog below, at catalog prices. Never invent products, contents, prices, offers, discounts or delivery terms. Get prices only from get_quote.",

@@ -1,19 +1,33 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import type { Locale } from "@/lib/catalog";
 import { getDict } from "@/i18n";
 import { CONTACT, staticQuestions } from "@/lib/site-faq";
 import { HartaApp } from "../harta/HartaApp";
 
-// Site-wide chat: a floating button (bottom right; the cart lives in the sticky header, top right)
-// that opens a panel with two starting points: Harta emoției and free questions about GiftMe.
-// The conversation lives only in this component's state: nothing is stored.
+// Site-wide chat with Gifty: the mascot floats bottom right (the cart lives in the sticky header,
+// top right) and opens a panel with two starting points: Harta emoției and free questions about
+// GiftMe. The conversation lives only in this component's state: nothing is stored.
+// Anything else on the page can open the panel with `document.dispatchEvent(new CustomEvent("gifty:open"))`
+// or `window.openGiftyChat()`.
 
 type View = "home" | "harta" | "ask";
 type Msg = { role: "user" | "assistant"; content: string };
 
 const MAX_ASK_MESSAGES = 10;
+const BUBBLE_DELAY_MS = 2500;
+const BUBBLE_EVERY_MS = 12000;
+const BUBBLE_VISIBLE_MS = 5000;
+/** Once the bubble is closed (or the chat opened), it stays hidden for the rest of the visit. */
+const BUBBLE_DISMISSED_KEY = "gifty-bubble-dismissed";
+
+declare global {
+  interface Window {
+    openGiftyChat?: () => void;
+  }
+}
 
 export function ChatWidget({ lang }: { lang: Locale }) {
   const t = getDict(lang).chat;
@@ -29,6 +43,54 @@ export function ChatWidget({ lang }: { lang: Locale }) {
 
   const wasOpen = useRef(false);
 
+  // The speech bubble: first line after 2.5 s, the next one every 12 s, each shown for 5 s.
+  const [bubbleLine, setBubbleLine] = useState(0);
+  const [bubbleShown, setBubbleShown] = useState(false);
+  const [bubbleDismissed, setBubbleDismissed] = useState(false);
+
+  useEffect(() => {
+    if (bubbleDismissed) return;
+    try {
+      if (sessionStorage.getItem(BUBBLE_DISMISSED_KEY)) return;
+    } catch {}
+    let n = 0;
+    let hideTimer: ReturnType<typeof setTimeout> | undefined;
+    let every: ReturnType<typeof setInterval> | undefined;
+    const next = () => {
+      setBubbleLine(n++ % t.bubble.length);
+      setBubbleShown(true);
+      hideTimer = setTimeout(() => setBubbleShown(false), BUBBLE_VISIBLE_MS);
+    };
+    const first = setTimeout(() => {
+      next();
+      every = setInterval(next, BUBBLE_EVERY_MS);
+    }, BUBBLE_DELAY_MS);
+    return () => {
+      clearTimeout(first);
+      clearTimeout(hideTimer);
+      clearInterval(every);
+    };
+  }, [bubbleDismissed, t.bubble.length]);
+
+  function dismissBubble() {
+    setBubbleShown(false);
+    setBubbleDismissed(true);
+    try {
+      sessionStorage.setItem(BUBBLE_DISMISSED_KEY, "1");
+    } catch {}
+  }
+
+  // Other parts of the site (hero buttons, links) can open the chat.
+  useEffect(() => {
+    const onOpen = () => show();
+    document.addEventListener("gifty:open", onOpen);
+    window.openGiftyChat = onOpen;
+    return () => {
+      document.removeEventListener("gifty:open", onOpen);
+      if (window.openGiftyChat === onOpen) delete window.openGiftyChat;
+    };
+  });
+
   useEffect(() => {
     if (open) heading.current?.focus();
   }, [open, view]);
@@ -41,6 +103,7 @@ export function ChatWidget({ lang }: { lang: Locale }) {
   }, [open]);
 
   function show() {
+    dismissBubble();
     setMounted(true);
     setOpen(true);
   }
@@ -73,17 +136,34 @@ export function ChatWidget({ lang }: { lang: Locale }) {
 
   return (
     <>
-      <button
-        ref={launcher}
-        type="button"
-        onClick={() => (open ? hide() : show())}
-        aria-expanded={open}
-        aria-controls={mounted ? panelId : undefined}
-        aria-label={open ? t.close : t.open}
-        className={`fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-50 grid size-14 place-items-center rounded-full bg-red text-white shadow-lg shadow-black/25 transition hover:bg-red-dark ${open ? "max-sm:hidden" : ""}`}
-      >
-        {open ? <CloseIcon /> : <ChatIcon />}
-      </button>
+      <div className={`gifty-launcher ${open ? "max-sm:hidden" : ""}`}>
+        {!open && !bubbleDismissed && (
+          <div className="gifty-bubble" data-show={bubbleShown}>
+            <button type="button" onClick={show} className="block text-left">
+              {t.bubble[bubbleLine]}
+            </button>
+            <button
+              type="button"
+              onClick={dismissBubble}
+              aria-label={t.bubbleClose}
+              className="absolute right-2 top-1.5 grid size-5 place-items-center text-base leading-none text-muted hover:text-ink"
+            >
+              ×
+            </button>
+          </div>
+        )}
+        <button
+          ref={launcher}
+          type="button"
+          onClick={() => (open ? hide() : show())}
+          aria-expanded={open}
+          aria-controls={mounted ? panelId : undefined}
+          aria-label={open ? t.close : t.open}
+          className="gifty-btn"
+        >
+          <Image src="/img/gifty-thinking.svg" alt="" width={84} height={96} className="size-full" unoptimized />
+        </button>
+      </div>
 
       {mounted && (
         <div
@@ -94,7 +174,7 @@ export function ChatWidget({ lang }: { lang: Locale }) {
           aria-labelledby={titleId}
           hidden={!open}
           onKeyDown={onKeyDown}
-          className="fixed inset-0 z-50 flex flex-col bg-ink text-white sm:inset-auto sm:bottom-24 sm:right-4 sm:h-[min(680px,calc(100dvh-8rem))] sm:w-[400px] sm:rounded-3xl sm:shadow-2xl sm:shadow-black/40"
+          className="fixed inset-0 z-50 flex flex-col bg-ink text-white sm:inset-auto sm:bottom-32 sm:right-4 sm:h-[min(680px,calc(100dvh-10rem))] sm:w-[400px] sm:rounded-3xl sm:shadow-2xl sm:shadow-black/40"
         >
           <div className="flex items-center gap-3 border-b border-white/15 px-4 py-3">
             {view !== "home" && (
@@ -102,6 +182,7 @@ export function ChatWidget({ lang }: { lang: Locale }) {
                 ← {t.back}
               </button>
             )}
+            {view === "home" && <GiftyAvatar />}
             <h2 ref={heading} id={titleId} tabIndex={-1} className="min-w-0 flex-1 truncate font-display text-lg font-black outline-none">
               {view === "harta" ? t.hartaTitle : view === "ask" ? t.askTitle : t.title}
             </h2>
@@ -207,10 +288,13 @@ function AskChat({ lang }: { lang: Locale }) {
               {m.content}
             </p>
           ) : (
-            <p key={i} className="w-fit max-w-[90%] whitespace-pre-line rounded-2xl rounded-bl-sm bg-white px-4 py-2.5 text-ink">
-              <span className="sr-only">{t.bot}: </span>
-              <Linkified text={m.content} />
-            </p>
+            <div key={i} className="flex items-end gap-2">
+              <GiftyAvatar />
+              <p className="w-fit max-w-[85%] whitespace-pre-line rounded-2xl rounded-bl-sm bg-white px-4 py-2.5 text-ink">
+                <span className="sr-only">{t.bot}: </span>
+                <Linkified text={m.content} />
+              </p>
+            </div>
           ),
         )}
         {busy && <p className="animate-pulse text-muted-dark">{t.thinking}</p>}
@@ -306,13 +390,9 @@ function Linkified({ text }: { text: string }) {
   );
 }
 
-function ChatIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="size-7" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z" />
-      <path d="M8.5 11h.01M12 11h.01M15.5 11h.01" strokeWidth={3} />
-    </svg>
-  );
+/** Gifty, small, next to the panel title and his replies (decorative: the name is in the text). */
+function GiftyAvatar() {
+  return <Image src="/img/gifty-hero.svg" alt="" width={40} height={40} className="size-10 shrink-0 rounded-full bg-white object-contain p-0.5" unoptimized />;
 }
 
 function CloseIcon() {
