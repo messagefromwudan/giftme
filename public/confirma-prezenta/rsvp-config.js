@@ -10,7 +10,7 @@ var RSVP_ENDPOINTS = {
 	// giftme.site – verificarea biletelor la intrare (/confirma-prezenta/intrare/)
 	liveCheckin: '',
 	// previzualizările Vercel (branch-ul dev): copia de test, pentru formular și intrare
-	test: '',
+	test: 'https://script.google.com/macros/s/AKfycbwAMFHyaWXEXj1Qm_n4o-WKB5KnVVSUSlr4DqkWsWPcweUU_JYRau2qRGHFEntrkTvc/exec',
 };
 var RSVP_IS_LIVE = /(^|\.)giftme\.site$/.test(location.hostname);
 
