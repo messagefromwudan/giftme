@@ -6,9 +6,9 @@
 // ca să știe dacă site-ul îl folosește: păstrează forma cheie: 'URL' pe un singur rând.
 var RSVP_ENDPOINTS = {
 	// giftme.site – formularul de confirmare
-	live: 'https://script.google.com/macros/s/AKfycbwFSO9fIvZ7RBpFYwfwNNyw6QyKtbpmvksTyvqQkfTIW_qhx5zKcW45stqPTD5Bx1zU/exec',
+	live: 'https://script.google.com/macros/s/AKfycbwKZ48I3jz5ez3mgVcJIdAtklHQV8409bl2_cgraHK8FfM5MWd9BMSJ6Ug3X1PdX6w7/exec',
 	// giftme.site – verificarea biletelor la intrare (/confirma-prezenta/intrare/)
-	liveCheckin: '',
+	liveCheckin: 'https://script.google.com/macros/s/AKfycbwKZ48I3jz5ez3mgVcJIdAtklHQV8409bl2_cgraHK8FfM5MWd9BMSJ6Ug3X1PdX6w7/exec',
 	// previzualizările Vercel (branch-ul dev): copia de test, pentru formular și intrare
 	test: 'https://script.google.com/macros/s/AKfycbwAMFHyaWXEXj1Qm_n4o-WKB5KnVVSUSlr4DqkWsWPcweUU_JYRau2qRGHFEntrkTvc/exec',
 };
