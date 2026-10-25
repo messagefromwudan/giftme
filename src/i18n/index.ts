@@ -66,7 +66,6 @@ const ro = {
       "Plătești cotația, abia apoi cumpărăm cadoul.",
       "Îl ambalăm în cutia gravată și îl livrăm surpriză în Chișinău.",
     ],
-    photoSoon: "Ilustrație: fotografia cutiei vine în curând",
   },
   how: {
     eyebrow: "Simplu, în 4 pași",
@@ -447,7 +446,6 @@ const en: Dict = {
       "You pay the quote; only then do we buy the gift.",
       "We wrap it in the engraved box and deliver it as a surprise in Chișinău.",
     ],
-    photoSoon: "Illustration: box photo coming soon",
   },
   how: {
     eyebrow: "Simple, in 4 steps",

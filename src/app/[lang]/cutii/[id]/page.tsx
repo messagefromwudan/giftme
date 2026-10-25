@@ -48,7 +48,7 @@ export default async function BoxPage({ params }: PageProps<"/[lang]/cutii/[id]"
         </nav>
 
         <div className="mt-6 grid gap-10 md:grid-cols-2">
-          <figure>
+          <div>
             <BoxImage
               box={box}
               lang={lang}
@@ -57,8 +57,7 @@ export default async function BoxPage({ params }: PageProps<"/[lang]/cutii/[id]"
               sizes="(min-width: 1152px) 552px, (min-width: 768px) 46vw, 92vw"
               className="rounded-3xl"
             />
-            {!box.photo && <figcaption className="mt-2 text-xs text-muted">{t.boxes.photoSoon}</figcaption>}
-          </figure>
+          </div>
 
           <div>
             <p className="text-sm font-semibold tracking-widest text-muted">{box.id}</p>

@@ -42,7 +42,7 @@ export type Box = {
   /** Tags used by search_boxes and the on-site agent. */
   tags: string[];
   motif: Motif;
-  /** Real box photo under /public; boxes without one show the illustrated placeholder (BoxArt). */
+  /** Box photo under /public. GM-09 has none on purpose (the customer picks the gift): it keeps the illustration. */
   photo?: BoxPhoto;
 };
 

@@ -3,8 +3,8 @@ import type { Box, Locale } from "@/lib/catalog";
 import { BoxArt } from "./BoxArt";
 
 /**
- * The box photo through next/image (AVIF/WebP, sized by `sizes`), or the illustrated
- * placeholder for a box that has no photo yet.
+ * The box photo through next/image (AVIF/WebP, sized by `sizes`), or the
+ * illustration for a box without one (GM-09, whose gift the customer chooses).
  *
  * - "cover": fills the frame set by `className` (aspect ratio or fixed size), cropping the edges.
  * - "natural": full width at the photo's own aspect ratio, nothing cropped (the box page).
