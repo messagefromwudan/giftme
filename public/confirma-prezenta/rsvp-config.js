@@ -1,9 +1,22 @@
 // Configurația paginii de confirmare. Pentru o întrebare nouă, adaugă un obiect în FIELDS
-// și același câmp în FIELDS din apps-script/rsvp.gs (validarea pe server).
+// și același câmp în FIELDS din apps-script/v2/Cod.gs (validarea pe server).
+
+// URL-urile aplicațiilor web Google Apps Script (vezi apps-script/v2/GHID.md). Gol = pagina
+// afișează o eroare prietenoasă în loc să trimită. Scriptul v2 citește linia „live:” (sau „test:”)
+// ca să știe dacă site-ul îl folosește: păstrează forma cheie: 'URL' pe un singur rând.
+var RSVP_ENDPOINTS = {
+	// giftme.site – formularul de confirmare
+	live: 'https://script.google.com/macros/s/AKfycbwFSO9fIvZ7RBpFYwfwNNyw6QyKtbpmvksTyvqQkfTIW_qhx5zKcW45stqPTD5Bx1zU/exec',
+	// giftme.site – verificarea biletelor la intrare (/confirma-prezenta/intrare/)
+	liveCheckin: '',
+	// previzualizările Vercel (branch-ul dev): copia de test, pentru formular și intrare
+	test: '',
+};
+var RSVP_IS_LIVE = /(^|\.)giftme\.site$/.test(location.hostname);
+
 window.RSVP_CONFIG = {
-	// URL-ul aplicației web Google Apps Script (vezi apps-script/README.md).
-	// Gol = formularul afișează o eroare prietenoasă în loc să trimită.
-	endpoint: 'https://script.google.com/macros/s/AKfycbwFSO9fIvZ7RBpFYwfwNNyw6QyKtbpmvksTyvqQkfTIW_qhx5zKcW45stqPTD5Bx1zU/exec',
+	endpoint: RSVP_IS_LIVE ? RSVP_ENDPOINTS.live : RSVP_ENDPOINTS.test,
+	checkinEndpoint: RSVP_IS_LIVE ? RSVP_ENDPOINTS.liveCheckin : RSVP_ENDPOINTS.test,
 	// Doar în previzualizarea locală (python3 dev-server.py), cât timp endpoint e gol:
 	// răspunsurile merg în rsvp-test-local.csv, fără emailuri.
 	devEndpoint: '/__rsvp-test',
@@ -41,7 +54,7 @@ window.RSVP_CONFIG = {
 			inputType: 'email',
 			inputMode: 'email',
 			label: 'Email',
-			hint: 'Îți trimitem confirmarea și o reamintire înainte de eveniment.',
+			hint: 'Aici îți trimitem biletul cu codul QR și reamintirile.',
 			required: true,
 			autocomplete: 'email',
 			maxLength: 120,

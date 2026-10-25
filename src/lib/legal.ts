@@ -57,7 +57,7 @@ export const TERMS: LegalDoc = {
 export const PRIVACY: LegalDoc = {
   path: "/confidentialitate/",
   title: "Politica de confidențialitate",
-  updated: "24 octombrie 2026",
+  updated: "25 octombrie 2026",
   blocks: [
     {
       p: `${SITE.legalName} („GiftMe!”, „noi”) este o firmă de exercițiu a elevilor de la CEEF Chișinău. Această pagină explică ce date personale colectăm prin giftme.site, de ce și cât timp le păstrăm.`,
@@ -66,7 +66,7 @@ export const PRIVACY: LegalDoc = {
     {
       ul: [
         "**Când ne scrii sau ne suni** (email, telefon, rețele sociale): numele, datele de contact și ce ne transmiți, ca să-ți putem răspunde.",
-        "**Confirmarea prezenței la lansare** (pagina /confirma-prezenta/): numele, emailul și răspunsul tău, ca să-ți trimitem confirmarea și o reamintire.",
+        "**Confirmarea prezenței la lansare** (pagina /confirma-prezenta/): numele, emailul și răspunsul tău. Detaliile sunt mai jos, la „Confirmarea prezenței la lansare”.",
         "**Comenzi** (comenzi de exercițiu): numele, emailul și telefonul tău, numele destinatarului, adresa și data livrării, textele de personalizare și, pentru YOUR BOX, cadoul ales. Le folosim ca să pregătim comanda, să-ți trimitem emailuri despre ea și pentru evidența contabilă a firmei de exercițiu.",
         `**Mesajul pentru codul QR**: înregistrarea audio/video sau textul pe care îl lași destinatarului. Fișierele stau într-un spațiu de stocare privat și se deschid doar printr-un link temporar, pentru cine scanează codul QR. Le ștergem la ${RULES.dataRetentionDaysAfterReveal} de zile după ce destinatarul își dezvăluie codul PASS-IT-ON. Mesajele al căror cod nu a fost dezvăluit niciodată se șterg pe ${unrevealed}.`,
         "**Asistentul AI de pe site** (fereastra de chat, cu „Harta emoției” și întrebările despre GiftMe, și pagina /harta-emotiei/): răspunsurile la chestionar și mesajele pe care le scrii sunt trimise către OpenAI (OpenAI OpCo, LLC, SUA), furnizorul modelului de inteligență artificială, ca să primești un răspuns. Înainte de trimitere, înlocuim automat adresele de email și numerele de telefon din ce ai scris. Noi nu salvăm conversația în baza noastră de date și cerem ca OpenAI să nu o păstreze pentru consultare ulterioară. Conversația rămâne doar în pagina deschisă și dispare când închizi sau reîncarci pagina. Nu scrie în conversație date personale.",
@@ -75,9 +75,25 @@ export const PRIVACY: LegalDoc = {
         "**Statistici de vizitare**: numărăm vizitele anonim, fără cookie-uri și fără să te identificăm.",
       ],
     },
+    { h2: "Confirmarea prezenței la lansare" },
+    {
+      p: `Numele, emailul și răspunsul tău, codul biletului tău și ora la care ai intrat le folosim doar ca să organizăm deschiderea GiftMe! din 2 noiembrie 2026 și nu le dăm nimănui altcuiva. Google este serviciul care păstrează înscrierile (un tabel Google Sheets al echipei) și trimite emailurile (prin Gmail, din contul ${SITE.email}). Codul QR de pe bilet conține doar un cod aleatoriu, nu numele sau emailul tău, și îl generăm noi, fără un serviciu extern. La intrare, echipa scanează codul și marchează în tabel că ai venit.`,
+    },
+    { p: "Emailurile trimise prin pagina de confirmare și de ce:" },
+    {
+      ol: [
+        "**Confirmarea răspunsului**, imediat după ce trimiți formularul, ca să știi că l-am primit: pentru „Da”, biletul de invitat cu codul QR de intrare; pentru „Nu”, un mesaj de mulțumire.",
+        `**O notificare pentru echipă**, la ${SITE.email}, cu numele, emailul și răspunsul tău, ca să știm cine vine.`,
+        "**Reamintiri**, doar dacă ai răspuns „Da”: joi, 29 octombrie; duminică, 1 noiembrie; luni, 2 noiembrie, la 07:30 și la 09:00. Dacă te înscrii după una dintre aceste ore, primești doar reamintirile care urmează.",
+        "**Un singur email după eveniment**, trimis de echipă după ce a terminat de marcat prezența: dacă ai venit, cu un formular Google Forms pentru părerea ta; dacă ai confirmat, dar n-ai putut ajunge, cu un formular scurt despre motiv. Formularele nu îți cer emailul.",
+      ],
+    },
+    {
+      p: "Fiecare email către tine are un link prin care oprești mesajele despre eveniment; poți și să răspunzi cu „STOP”.",
+    },
     { h2: "Unde sunt păstrate datele" },
     {
-      p: `Datele comenzilor și mesajele QR sunt păstrate în baza noastră de date și în spațiul de stocare privat (Supabase, servere în Uniunea Europeană). Site-ul este găzduit de Vercel. Emailurile pleacă din contul nostru ${SITE.email}. Accesul la date îl are doar echipa GiftMe, prin panoul de administrare protejat cu parolă.`,
+      p: `Datele comenzilor și mesajele QR sunt păstrate în baza noastră de date și în spațiul de stocare privat (Supabase, servere în Uniunea Europeană). Confirmările de prezență la lansare sunt păstrate în Google Sheets. Site-ul este găzduit de Vercel. Emailurile pleacă din contul nostru ${SITE.email}. Accesul la date îl are doar echipa GiftMe, prin panoul de administrare protejat cu parolă și prin contul Google al echipei.`,
     },
     { h2: "Cookie-uri" },
     {
@@ -85,7 +101,7 @@ export const PRIVACY: LegalDoc = {
     },
     { h2: "Cu cine împărțim datele" },
     {
-      p: "Nu vindem și nu închiriem datele tale. Le folosim doar prin serviciile tehnice de care avem nevoie ca site-ul să funcționeze: găzduirea (Vercel), baza de date și stocarea (Supabase), emailul și asistentul AI (OpenAI OpCo, LLC, din SUA, doar pentru conversațiile cu asistentul de pe site și demonstrația pentru agenți).",
+      p: "Nu vindem și nu închiriem datele tale. Le folosim doar prin serviciile tehnice de care avem nevoie ca site-ul să funcționeze: găzduirea (Vercel), baza de date și stocarea (Supabase), confirmările de prezență la lansare, cu emailurile și formularele lor (Google), emailul și asistentul AI (OpenAI OpCo, LLC, din SUA, doar pentru conversațiile cu asistentul de pe site și demonstrația pentru agenți).",
     },
     { h2: "Drepturile tale" },
     {

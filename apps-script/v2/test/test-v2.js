@@ -1,0 +1,300 @@
+// Rulează: node apps-script/v2/test/test-v2.js  (Cod.gs și rsvp.gs pe servicii Google simulate, cu ceas controlat)
+const assert = require('assert');
+const zlib = require('zlib');
+const fs = require('fs');
+const { createWorld } = require('./gas-harness');
+
+const REPO = require('path').join(__dirname, '../../../') + '/';
+const NEW = [REPO + 'apps-script/v2/QR.gs', REPO + 'apps-script/v2/Cod.gs'];
+const OLD = [REPO + 'apps-script/rsvp.gs'];
+let passed = 0;
+const ok = (cond, msg) => { assert.ok(cond, msg); passed++; };
+const eq = (a, b, msg) => { assert.deepStrictEqual(a, b, msg); passed++; };
+
+const C = { sent: 0, nume: 1, email: 2, prezenta: 3, updated: 4, nr: 5, confirm: 6, r1nov: 7, code: 8, yesSince: 9, qrSent: 10, r29oct: 11, r0730: 12, r0900: 13, came: 14, cameAt: 15, cameVia: 16, followup: 17, optOut: 18, team: 19 };
+
+/* ---------- 1. Old sheet with old rows, migrated by setup() ---------- */
+const w = createWorld();
+w.load(...NEW);
+Object.assign(w.props, {
+  MOD_TEST: 'da', TEST_EMAIL: 'tester@gmail.com', TEAM_EMAIL: 'tester+echipa@gmail.com', STAFF_PIN: '482913',
+  WEB_APP_URL: 'https://script.google.com/macros/s/NEWID/exec', SITE_URL: 'https://giftme-git-dev.vercel.app',
+});
+// The old script's layout and two rows it wrote (col 5 empty on new rows, as the old appendRow did).
+const old = w.ctx.SpreadsheetApp.getActiveSpreadsheet().insertSheet('Confirmări');
+const D = (iso) => new w.Date(iso);
+old.appendRow(['Trimis la', 'Nume, prenume', 'Email', 'Prezent(ă)', 'Actualizat la', 'Nr. invitat', 'Confirmare trimisă', 'Reamintire trimisă']);
+old.appendRow([D('2026-10-20T10:00:00+03:00'), 'Ion Vechi', 'tester+vechi@gmail.com', 'Da', '', 1, D('2026-10-20T10:00:05+03:00'), '']);
+old.appendRow([D('2026-10-21T10:00:00+03:00'), 'Maria Nu', 'tester+nu@gmail.com', 'Nu', '', 2, D('2026-10-21T10:00:05+03:00'), '']);
+
+w.at('2026-10-25T12:00:00+02:00');
+w.ctx.setup();
+eq(w.sheet().cells[0].length, 20, 'setup adds 12 columns');
+eq(w.sheet().cells[0][7], 'Reamintire 1 nov', 'col 8 renamed, same position');
+ok(/^[0-9a-f]{32}$/.test(w.rows()[0][C.code]), 'old row got a 128-bit hex code');
+ok(w.rows()[0][C.yesSince] instanceof w.Date, 'old Da row got "Da din"');
+eq(w.rows()[1][C.yesSince], undefined, 'Nu row has no "Da din"');
+eq(w.tz, 'Europe/Chisinau', 'sheet time zone set');
+const fmt = (d) => w.ctx.fmtDateTime_(d);
+eq(w.triggers.map((t) => fmt(t.at)), [
+  '29.10.2026 10:00', '29.10.2026 10:15', '01.11.2026 07:00', '01.11.2026 07:15',
+  '02.11.2026 07:30', '02.11.2026 07:45', '02.11.2026 09:00', '02.11.2026 09:15',
+], 'eight triggers at the planned Chișinău times');
+ok(w.sheet().validation['2:15'] === 'checkbox', 'Venit? has checkbox validation');
+eq(w.sheet().getLastRow(), 3, 'checkbox validation does not move getLastRow');
+
+/* ---------- 2. Sign-up: ticket with QR + team notice ---------- */
+w.mails = [];
+let res = w.rsvp('Ana Test', 'tester+ana@gmail.com', 'Da');
+eq(res.ok, true, 'rsvp ok'); eq(res.emailSent, true, 'email sent'); eq(res.nr, 3, 'nr = row-1 like before');
+const ana = () => w.rows().find((r) => r[C.email] === 'tester+ana@gmail.com');
+eq(w.mails.length, 2, 'guest ticket + team notice');
+const ticketMail = w.mails[0];
+eq(ticketMail.to, 'tester+ana@gmail.com');
+ok(ticketMail.options.inlineImages && ticketMail.options.inlineImages.qr, 'QR is an inline image');
+ok(ticketMail.options.htmlBody.includes('cid:qr'), 'HTML references cid:qr');
+ok(ticketMail.options.htmlBody.includes('CEEF, Cabinetul 223') && ticketMail.options.htmlBody.includes('09:30'), 'ticket has place and time');
+ok(ticketMail.options.htmlBody.includes('?stop=' + ana()[C.code]), 'stop link present');
+ok(ticketMail.body.includes('joi, 29 octombrie; duminică, 1 noiembrie; luni, 2 noiembrie, la 07:30 și luni, 2 noiembrie, la 09:00'), 'lists the four reminders');
+eq(w.mails[1].to, 'tester+echipa@gmail.com', 'team notice goes to TEAM_EMAIL');
+ok(w.mails[1].subject.includes('RSVP Da: Ana Test (răspuns nou)'), 'team subject');
+ok(w.mails[1].body.includes('tester+ana@gmail.com') && w.mails[1].body.includes('2 × Da, 1 × Nu'), 'team body has email + totals');
+ok(ana()[C.qrSent] instanceof w.Date && ana()[C.team] instanceof w.Date, 'qrSent + team recorded');
+
+// QR: decode the PNG and compare with the matrix; it must carry only the ticket URL.
+const png = Buffer.from(ticketMail.options.inlineImages.qr.data.map((b) => (b + 256) % 256));
+eq([...png.slice(0, 8)], [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A], 'PNG signature');
+const width = png.readUInt32BE(16);
+let off = 8; let idat = Buffer.alloc(0);
+while (off < png.length) {
+  const len = png.readUInt32BE(off); const type = png.slice(off + 4, off + 8).toString();
+  const data = png.slice(off + 8, off + 8 + len);
+  const crc = png.readUInt32BE(off + 8 + len);
+  eq(crc, zlib.crc32(png.slice(off + 4, off + 8 + len)), 'chunk CRC ' + type);
+  if (type === 'IDAT') idat = Buffer.concat([idat, data]);
+  off += 12 + len;
+}
+const raw = zlib.inflateSync(idat); // also verifies the Adler-32
+const url = 'https://giftme-git-dev.vercel.app/confirma-prezenta/intrare/#' + ana()[C.code];
+const m = w.ctx.GiftMeQR.matrix(url);
+const rowBytes = Math.ceil(width / 8);
+let mismatch = 0;
+for (let y = 0; y < width; y++) for (let x = 0; x < width; x++) {
+  const white = (raw[y * (rowBytes + 1) + 1 + (x >> 3)] >> (7 - (x & 7))) & 1;
+  const mx = Math.floor(x / 8) - 4; const my = Math.floor(y / 8) - 4;
+  const dark = mx >= 0 && my >= 0 && mx < m.size && my < m.size && m.dark(mx, my);
+  if (dark === Boolean(white)) mismatch++;
+}
+eq(mismatch, 0, 'PNG pixels equal the QR matrix');
+
+
+ok(!url.includes('ana') && !url.toLowerCase().includes('test'), 'QR URL has no name or email');
+
+// Same answer again: no guest email, team still notified.
+w.mails = [];
+res = w.rsvp('Ana Test', 'tester+ana@gmail.com', 'Da');
+eq(res.emailSent, false); eq(w.mails.length, 1); ok(w.mails[0].subject.includes('același răspuns'), 'resubmit notice');
+
+// Test mode blocks any other recipient.
+w.mails = [];
+res = w.rsvp('Străin', 'cineva@exemplu.com', 'Da');
+eq(w.mails.filter((x) => x.to === 'cineva@exemplu.com').length, 0, 'test mode blocks real addresses');
+ok(String(w.rows().find((r) => r[C.email] === 'cineva@exemplu.com')[C.confirm]).startsWith('eroare: blocat'), 'blocked recorded');
+// Remove that row's Da so it doesn't pollute the reminders below.
+w.rows().find((r) => r[C.email] === 'cineva@exemplu.com')[C.prezenta] = 'Nu';
+
+/* ---------- 3. Reminder 1, twice; late sign-up ---------- */
+w.at('2026-10-29T10:00:20+02:00');
+w.mails = [];
+w.ctx.ruleazaReamintiri();
+eq(w.mails.map((x) => x.to).sort(), ['tester+ana@gmail.com', 'tester+vechi@gmail.com'], 'R1 to the two Da guests');
+ok(w.mails[0].subject.includes('Luni ne vedem'), 'R1 subject');
+ok(w.mails.every((x) => x.options.inlineImages.qr && x.options.htmlBody.includes('str. Miron Costin 26/2') && x.options.htmlBody.includes('09:30') && x.options.htmlBody.includes('STOP')), 'R1: address, time, QR, stop line');
+w.at('2026-10-29T10:15:20+02:00');
+w.mails = [];
+w.ctx.ruleazaReamintiri();
+w.ctx.ruleazaReamintiri();
+eq(w.mails.length, 0, 'R1 retry and a duplicate run send nothing');
+
+w.at('2026-10-29T11:00:00+02:00');
+w.mails = [];
+w.rsvp('Bogdan Târziu', 'tester+bogdan@gmail.com', 'Da');
+const bogdan = () => w.rows().find((r) => r[C.email] === 'tester+bogdan@gmail.com');
+eq(bogdan()[C.r29oct], 'nu: confirmat după ora reamintirii', 'late sign-up skips R1');
+ok(w.mails[0].body.includes('Îți trimitem reamintiri: duminică, 1 noiembrie; luni, 2 noiembrie, la 07:30 și luni, 2 noiembrie, la 09:00'), 'late sign-up told only the remaining reminders');
+
+/* ---------- 4. Reminder 2 + old script's 10:00 trigger on the same sheet ---------- */
+w.at('2026-11-01T07:00:30+02:00');
+w.mails = [];
+w.ctx.ruleazaReamintiri();
+eq(w.mails.length, 3, 'R2 to vechi, ana, bogdan');
+const wOld = createWorld();
+wOld.sheets = w.sheets; // same sheet
+wOld.load(...OLD);
+wOld.at('2026-11-01T10:00:00+02:00');
+wOld.ctx.sendReminders();
+eq(wOld.mails.length, 0, 'old 10:00 trigger finds col 8 filled and sends nothing');
+
+/* ---------- 5. Unsubscribe ---------- */
+const anaCode = ana()[C.code];
+let page = w.ctx.doGet({ parameter: { stop: anaCode } });
+ok(page.html.includes('ok=1') && ana()[C.optOut] === '', 'first click only asks');
+page = w.ctx.doGet({ parameter: { stop: anaCode, ok: '1' } });
+ok(page.html.includes('Gata') && ana()[C.optOut] instanceof w.Date, 'second click opts out');
+
+/* ---------- 6. Reminder 3 ---------- */
+w.at('2026-11-02T07:30:10+02:00');
+w.mails = [];
+w.ctx.ruleazaReamintiri();
+eq(w.mails.map((x) => x.to).sort(), ['tester+bogdan@gmail.com', 'tester+vechi@gmail.com'], 'R3 skips the opted-out guest');
+eq(ana()[C.r0730], 'nu: a cerut să nu mai primească emailuri');
+
+/* ---------- 7. Check-in ---------- */
+const bCode = bogdan()[C.code];
+eq(w.post({ action: 'verify', code: bCode }), { ok: true, status: 'valid' }, 'verify without PIN: valid, no name');
+eq(bogdan()[C.came], '', 'verify marks nothing');
+eq(w.post({ action: 'checkin', code: bCode, pin: '000000' }), { ok: false, error: 'wrong_pin' }, 'wrong PIN refused');
+eq(bogdan()[C.came], '', 'wrong PIN marks nothing');
+w.at('2026-11-02T08:50:00+02:00');
+eq(w.post({ action: 'checkin', code: bCode, pin: '482913' }), { ok: true, status: 'checked_in', name: 'Bogdan Târziu', at: '08:50', answer: 'Da' }, 'check-in');
+eq(bogdan()[C.came], true); eq(bogdan()[C.cameVia], 'scanare');
+w.at('2026-11-02T08:55:00+02:00');
+eq(w.post({ action: 'checkin', code: bCode, pin: '482913' }).status, 'already', 'second scan: already');
+eq(w.post({ action: 'checkin', code: bCode, pin: '482913' }).at, '08:50', 'already shows first time');
+eq(w.post({ action: 'checkin', code: 'f'.repeat(32), pin: '482913' }), { ok: true, status: 'unknown' }, 'unknown code');
+eq(w.post({ action: 'verify', code: 'nu-e-cod' }), { ok: true, status: 'unknown' }, 'malformed code');
+
+// Manual tick by hand (onEdit) on the old guest, then untick, then tick again.
+const sh = w.sheet();
+const vechiRow = 2;
+sh.getRange(vechiRow, 15).setValue(true);
+w.ctx.onEdit({ range: sh.getRange(vechiRow, 15) });
+eq(sh.getRange(vechiRow, 17).getValue(), 'manual', 'hand tick → manual');
+sh.getRange(vechiRow, 15).setValue(false);
+w.ctx.onEdit({ range: sh.getRange(vechiRow, 15) });
+eq(sh.getRange(vechiRow, 16).getValue(), '', 'untick clears the time');
+
+/* ---------- 8. Reminder 4: checked-in guest skipped; nothing after 09:30 ---------- */
+w.at('2026-11-02T09:00:05+02:00');
+w.mails = [];
+w.ctx.ruleazaReamintiri();
+eq(w.mails.map((x) => x.to), ['tester+vechi@gmail.com'], 'R4 only to the guest not yet in');
+eq(bogdan()[C.r0900], 'nu: a venit deja');
+w.at('2026-11-02T09:31:00+02:00');
+w.mails = [];
+w.ctx.ruleazaReamintiri();
+eq(w.mails.length, 0, 'no reminder after the start');
+
+/* ---------- 9. Follow-up ---------- */
+w.at('2026-11-02T13:00:00+02:00');
+w.uiAnswer = { button: 'OK', text: 'nu' };
+w.mails = [];
+w.ctx.trimiteFollowUp();
+eq(w.mails.length, 0, 'follow-up needs GATA');
+w.props.FORM_REVIEW_URL = 'https://forms.gle/review';
+w.props.FORM_ABSENT_URL = 'https://forms.gle/absent';
+w.uiAnswer = { button: 'OK', text: 'gata' };
+w.ctx.trimiteFollowUp();
+eq(w.mails.map((x) => [x.to, x.options.htmlBody.includes('forms.gle/review') ? 'review' : 'absent']).sort(),
+  [['tester+bogdan@gmail.com', 'review'], ['tester+vechi@gmail.com', 'absent']], 'came → review, Da absent → absent, opted-out and Nu → nothing');
+w.mails = [];
+w.ctx.trimiteFollowUp();
+eq(w.mails.length, 0, 'follow-up never twice');
+// Outside test mode it refuses before the event.
+const w2 = createWorld(); w2.load(...NEW); w2.props.FORM_REVIEW_URL = 'x'; w2.props.FORM_ABSENT_URL = 'y';
+w2.at('2026-11-02T09:00:00+02:00'); w2.ctx.getSheet(); w2.ctx.trimiteFollowUp();
+ok(w2.alerts[0].includes('doar după eveniment') && w2.mails.length === 0, 'live: no follow-up before the event');
+
+/* ---------- 10. Rollback guard (live mode) ---------- */
+const g = createWorld(); g.load(...NEW);
+Object.assign(g.props, { WEB_APP_URL: 'https://script.google.com/macros/s/NEWID/exec', TEAM_EMAIL: 'echipa@x.md' });
+g.at('2026-10-26T12:00:00+02:00');
+g.ctx.setup();
+g.rsvp('Guest Live', 'guest@x.md', 'Da');
+const cfg = (live) => `var RSVP_ENDPOINTS = {\n\tlive: 'https://script.google.com/macros/s/${live}/exec',\n\tliveCheckin: 'https://script.google.com/macros/s/NEWID/exec',\n\ttest: '',\n};`;
+g.at('2026-10-29T10:00:30+02:00');
+g.fetch = () => ({ code: 200, text: cfg('OLDID') }); // rolled back
+g.mails = [];
+g.ctx.ruleazaReamintiri();
+eq(g.mails.map((x) => x.to), ['echipa@x.md'], 'rolled back: no reminder, one alert to the team');
+ok(g.mails[0].subject.includes('NU a fost trimisă'), 'alert subject');
+g.at('2026-10-29T10:15:30+02:00');
+g.mails = [];
+g.ctx.ruleazaReamintiri();
+eq(g.mails.length, 0, 'alert only once per reminder');
+g.fetch = () => ({ code: 200, text: cfg('NEWID') }); // site uses the new script
+g.at('2026-11-01T07:00:30+02:00');
+g.mails = [];
+g.ctx.ruleazaReamintiri();
+eq(g.mails.map((x) => x.to), ['guest@x.md'], 'site uses this script: reminder sent');
+g.fetch = () => ({ code: 503, text: '' }); // site unreachable → send anyway
+g.at('2026-11-02T07:30:30+02:00');
+g.mails = [];
+g.ctx.ruleazaReamintiri();
+eq(g.mails.map((x) => x.to), ['guest@x.md'], 'site unreachable: still sends (fail-open)');
+
+/* ---------- 11. Quota: team notices yield, reminders stop and alert ---------- */
+const q = createWorld(); q.load(...NEW);
+Object.assign(q.props, { TEAM_EMAIL: 'echipa@x.md' });
+q.at('2026-11-01T08:00:00+02:00'); q.ctx.setup();
+for (let i = 0; i < 6; i++) q.rsvp('Invitat ' + 'abcdef'[i], `g${i}@x.md`, 'Da');
+q.quota = 15;
+q.mails = [];
+q.rsvp('Ultim Moment', 'last@x.md', 'Da');
+eq(q.mails.map((x) => x.to), ['last@x.md'], 'low quota on the eve: guest confirmation yes, team notice no');
+ok(String(q.rows().find((r) => r[C.email] === 'last@x.md')[C.team]).startsWith('sărită'), 'skip recorded');
+q.quota = 5;
+q.at('2026-11-02T07:30:30+02:00');
+q.mails = [];
+q.ctx.ruleazaReamintiri();
+eq(q.mails.filter((x) => !x.subject.includes('⚠️')).length, 3, '3 reminders, then keep 2 for alerts');
+eq(q.mails.filter((x) => x.subject.includes('⚠️')).length, 1, 'the kept quota carries the alert');
+ok(q.rows().filter((r) => String(r[C.r0730]).includes('cota')).length === 4, 'quota-starved rows marked as retryable errors');
+q.quota = 50;
+q.at('2026-11-02T07:45:30+02:00');
+q.mails = [];
+q.ctx.ruleazaReamintiri();
+eq(q.mails.filter((x) => !x.subject.includes('⚠️')).length, 4, 'retry trigger sends the 4 left, none twice');
+
+/* ---------- 12. Trigger error → alert ---------- */
+const e = createWorld(); e.load(...NEW);
+Object.assign(e.props, { MOD_TEST: 'da', TEST_EMAIL: 'tester@gmail.com', TEAM_EMAIL: 'tester@gmail.com' });
+e.ctx.testEroareDeclansator();
+ok(e.mails.length === 1 && e.mails[0].subject.includes('Eroare la test'), 'trigger error alert');
+
+/* ---------- 13. Old script still works on the new sheet (rollback) ---------- */
+const o = createWorld(); o.sheets = w.sheets; o.load(...OLD);
+o.at('2026-11-02T10:00:00+02:00');
+const before = w.sheet().getLastRow();
+const r = JSON.parse(o.ctx.doPost({ postData: { contents: JSON.stringify({ nume: 'După Revenire', email: 'tester+dupa@gmail.com', prezenta: 'Da', t: 5000, cid: 'x' }) } }).text);
+eq(r.ok, true, 'old doPost works on the 20-column sheet');
+eq(w.sheet().getLastRow(), before + 1, 'old script appends one row');
+eq(w.rows()[w.rows().length - 1][C.nr], before, 'numbering continues');
+
+
+/* ---------- 14. ORA_REAMINTIRE_1NOV ---------- */
+const t = createWorld(); t.load(...NEW);
+t.at('2026-10-26T12:00:00+02:00');
+t.props.ORA_REAMINTIRE_1NOV = '8:30';
+t.ctx.setup();
+eq(t.triggers.map((x) => t.ctx.fmtDateTime_(x.at)).slice(2, 4), ['01.11.2026 08:30', '01.11.2026 08:45'], 'setting moves both 1 Nov triggers');
+t.rsvp('Ora Test', 'ora@x.md', 'Da');
+t.at('2026-11-01T07:00:30+02:00'); t.mails = []; t.ctx.ruleazaReamintiri();
+ok(t.mails.every((x) => !x.subject.includes('Mâine')), 'nothing at the old 07:00');
+t.at('2026-11-01T08:30:30+02:00'); t.mails = []; t.ctx.ruleazaReamintiri();
+eq(t.mails.map((x) => x.subject.includes('Mâine')), [true], '1 Nov reminder at 08:30');
+// Changed without setup: no effect, and the menu says so.
+t.props.ORA_REAMINTIRE_1NOV = '09:15';
+eq(t.ctx.fmtDateTime_(t.ctx.currentReminder_(new t.Date('2026-11-01T09:20:00+02:00')).at), '01.11.2026 08:30', 'needs setup to apply');
+t.ctx.arataReamintirile();
+ok(t.alerts.some((a) => a.includes('Rulează setup')), 'warns that setup is needed');
+// Invalid value: setup stops before touching anything.
+t.props.ORA_REAMINTIRE_1NOV = 'dimineața';
+const triggersBefore = t.triggers.length;
+assert.throws(() => t.ctx.setup(), /ORA_REAMINTIRE_1NOV/); passed++;
+eq(t.triggers.length, triggersBefore, 'invalid value leaves triggers alone');
+eq(t.ctx.warnings1Nov_(t.ctx.time1Nov_('07:00')).length, 0, '07:00: no warning');
+eq(t.ctx.warnings1Nov_(t.ctx.time1Nov_('08:00')).length, 1, '08:00: quota warning');
+eq(t.ctx.warnings1Nov_(t.ctx.time1Nov_('18:00')).length, 2, '18:00: old-trigger + quota warnings');
+
+console.log(`OK – ${passed} verificări`);

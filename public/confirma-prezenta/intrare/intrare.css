@@ -1,0 +1,186 @@
+/* Pagina de intrare: același stil ca /confirma-prezenta/ (rsvp.css), plus stările scanării. */
+
+.gate {
+    max-width: 560px;
+    padding: 1.25rem 1rem 2.5rem;
+}
+
+.gate__card {
+    text-align: center;
+}
+
+.gate [data-view][hidden] {
+    display: none;
+}
+
+.gate__title {
+    margin: 0.25rem 0 1rem;
+    font-size: 1.5rem;
+    line-height: 1.25;
+}
+
+.gate__text {
+    margin: 1rem 0 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.gate__small {
+    font-size: 0.8rem;
+}
+
+.gate__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin: 1.5rem 0;
+    font-weight: 600;
+}
+
+.gate__spinner {
+    width: 1.2rem;
+    height: 1.2rem;
+    border: 2.5px solid var(--blush-deep);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 700ms linear infinite;
+}
+
+.gate__badge {
+    display: inline-block;
+    margin: 0;
+    padding: 0.3rem 0.95rem;
+    border: 2.5px solid var(--ink);
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.gate__badge--ok {
+    background: #E3F6E8;
+    color: #0B5C27;
+}
+
+.gate__qr svg {
+    width: min(72vw, 280px);
+    height: auto;
+    margin: 0 auto;
+    background: #FFFFFF;
+}
+
+.gate__event {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1.25rem 0 0.5rem;
+    text-align: left;
+}
+
+.gate__event dt {
+    color: var(--red-ink);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.gate__event dd {
+    margin: 0;
+    font-weight: 600;
+}
+
+.gate__wide {
+    grid-column: 1 / -1;
+}
+
+.gate__result {
+    padding: 1.5rem 1rem;
+    border: 3px solid var(--ink);
+    border-radius: 18px;
+}
+
+.gate__result--in {
+    background: #1B7F37;
+    color: #FFFFFF;
+}
+
+.gate__result--already {
+    background: #FFF1C9;
+    color: var(--ink);
+}
+
+.gate__result--bad {
+    background: var(--blush);
+    color: var(--ink);
+}
+
+.gate__mark {
+    margin: 0;
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.gate__result--bad .gate__mark {
+    color: var(--red-ink);
+}
+
+.gate__name {
+    margin: 0.4rem 0 0.2rem;
+    font-size: clamp(1.7rem, 8vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+.gate__when {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.gate__note {
+    margin: 0.9rem 0 0;
+    padding: 0.7rem 1rem;
+    border-left: 4px solid var(--red-ink);
+    border-radius: 4px 12px 12px 4px;
+    background: var(--blush);
+    text-align: left;
+}
+
+.gate__note[hidden] {
+    display: none;
+}
+
+.gate__pin {
+    display: grid;
+    gap: 0.6rem;
+    text-align: left;
+}
+
+.gate__pin .btn,
+.gate__retry {
+    width: 100%;
+    margin-top: 0.75rem;
+}
+
+.staff-chip {
+    min-height: 40px;
+    padding: 0.35rem 0.9rem;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: #E3F6E8;
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.staff-chip span {
+    text-decoration: underline;
+}
+
+.staff-chip[hidden] {
+    display: none;
+}

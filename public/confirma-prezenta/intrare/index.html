@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Bilet de intrare | Deschiderea GiftMe!</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
+    <meta name="theme-color" content="#FDECEC">
+    <meta name="color-scheme" content="light">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../rsvp.css">
+    <link rel="stylesheet" href="intrare.css">
+</head>
+<body>
+    <!-- Biletul din emailul de confirmare: codul vine după # și nu ajunge la serverul site-ului.
+         Fără PIN, pagina spune doar dacă biletul e valid. Cu PIN-ul echipei, salvat pe telefonul
+         de la intrare, fiecare scanare marchează invitatul în foaia Google. -->
+    <div class="page">
+        <header class="topbar">
+            <a href="/" class="topbar__logo"><img src="../assets/logo-giftme.png" alt="GiftMe! – pagina principală" width="720" height="363"></a>
+            <button class="staff-chip" type="button" id="staff-exit" hidden>Mod echipă · <span>Ieși</span></button>
+        </header>
+
+        <main class="layout gate">
+            <div class="card gate__card" aria-live="polite">
+                <p class="eyebrow">Deschiderea GiftMe! · Bilet de intrare</p>
+
+                <section data-view="loading">
+                    <p class="gate__loading"><span class="gate__spinner" aria-hidden="true"></span> Se verifică biletul…</p>
+                </section>
+
+                <section data-view="nocode" hidden>
+                    <h1 class="gate__title">Scanează codul QR de pe bilet</h1>
+                    <p class="gate__text">Pagina se deschide singură când scanezi codul din emailul de confirmare.</p>
+                </section>
+
+                <section data-view="valid" hidden>
+                    <p class="gate__badge gate__badge--ok"><span aria-hidden="true">✓</span> Bilet valid</p>
+                    <h1 class="gate__title">Arată acest cod la intrare</h1>
+                    <div class="gate__qr" id="qr" role="img" aria-label="Codul QR al biletului"></div>
+                    <dl class="gate__event">
+                        <div><dt>Data</dt><dd data-event="dateLabel">Luni, 2 noiembrie 2026</dd></div>
+                        <div><dt>Ora</dt><dd data-event="timeLabel">ora 09:30</dd></div>
+                        <div class="gate__wide"><dt>Locul</dt><dd><span data-event="place">CEEF, Cabinetul 223</span>, <span data-event="address">str. Miron Costin 26/2, Chișinău</span></dd></div>
+                    </dl>
+                    <button class="link-btn" type="button" data-action="pin">Ești din echipa GiftMe? Intră cu PIN-ul</button>
+                </section>
+
+                <section data-view="in" hidden>
+                    <div class="gate__result gate__result--in">
+                        <p class="gate__mark" aria-hidden="true">✓</p>
+                        <p class="gate__name" id="in-name"></p>
+                        <p class="gate__when" id="in-when"></p>
+                    </div>
+                    <p class="gate__note" id="in-note" hidden></p>
+                    <p class="gate__text">Scanează următorul bilet cu camera telefonului.</p>
+                </section>
+
+                <section data-view="already" hidden>
+                    <div class="gate__result gate__result--already">
+                        <p class="gate__mark" aria-hidden="true">!</p>
+                        <p class="gate__name" id="already-name"></p>
+                        <p class="gate__when" id="already-when"></p>
+                    </div>
+                    <p class="gate__text">Biletul a fost deja scanat. Dacă nu e aceeași persoană, verifică numele în listă.</p>
+                </section>
+
+                <section data-view="unknown" hidden>
+                    <div class="gate__result gate__result--bad">
+                        <p class="gate__mark" aria-hidden="true">✗</p>
+                        <p class="gate__name">Bilet necunoscut</p>
+                        <p class="gate__when">Codul nu există în lista de invitați.</p>
+                    </div>
+                    <p class="gate__text">Caută invitatul după nume în foaia Google și bifează-l la „Venit?”.</p>
+                </section>
+
+                <section data-view="pin" hidden>
+                    <h1 class="gate__title">Modul echipă</h1>
+                    <form class="gate__pin" id="pin-form" novalidate>
+                        <label class="field__label" for="pin">PIN-ul echipei</label>
+                        <input class="input" id="pin" name="pin" type="password" inputmode="numeric" autocomplete="off" enterkeyhint="go" required>
+                        <p class="field__error" id="pin-error" role="alert" hidden></p>
+                        <button class="btn btn--primary" type="submit">Intră și marchează biletul</button>
+                    </form>
+                    <p class="gate__text gate__small">PIN-ul rămâne salvat doar în acest browser, pe acest telefon. De acum, fiecare bilet scanat aici e marcat prezent.</p>
+                    <button class="link-btn" type="button" data-action="cancel-pin">Înapoi la bilet</button>
+                </section>
+
+                <section data-view="error" hidden>
+                    <div class="gate__result gate__result--bad">
+                        <p class="gate__mark" aria-hidden="true">?</p>
+                        <p class="gate__when" id="error-text"></p>
+                    </div>
+                    <button class="btn btn--primary gate__retry" type="button" data-action="retry">Încearcă din nou</button>
+                    <p class="gate__text gate__small">Fără internet? Caută invitatul în lista tipărită și bifează-l acolo. Îl marcăm în foaie când revine conexiunea.</p>
+                </section>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <span class="marker footer__slogan">Gândit pentru tine</span>
+            <span>FE GiftMe! SRL · CEEF, Chișinău</span>
+        </footer>
+    </div>
+
+    <script src="../rsvp-config.js"></script>
+    <script src="qr.js"></script>
+    <script src="intrare.js" defer></script>
+</body>
+</html>
