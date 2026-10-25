@@ -37,7 +37,7 @@ eq(w.rows()[1][C.yesSince], undefined, 'Nu row has no "Da din"');
 eq(w.tz, 'Europe/Chisinau', 'sheet time zone set');
 const fmt = (d) => w.ctx.fmtDateTime_(d);
 eq(w.triggers.map((t) => fmt(t.at)), [
-  '29.10.2026 10:00', '29.10.2026 10:15', '01.11.2026 07:00', '01.11.2026 07:15',
+  '29.10.2026 10:00', '29.10.2026 10:15', '01.11.2026 16:00', '01.11.2026 16:15',
   '02.11.2026 07:30', '02.11.2026 07:45', '02.11.2026 09:00', '02.11.2026 09:15',
 ], 'eight triggers at the planned Chișinău times');
 ok(w.sheet().validation['2:15'] === 'checkbox', 'Venit? has checkbox validation');
@@ -123,17 +123,30 @@ const bogdan = () => w.rows().find((r) => r[C.email] === 'tester+bogdan@gmail.co
 eq(bogdan()[C.r29oct], 'nu: confirmat după ora reamintirii', 'late sign-up skips R1');
 ok(w.mails[0].body.includes('Îți trimitem reamintiri: duminică, 1 noiembrie; luni, 2 noiembrie, la 07:30 și luni, 2 noiembrie, la 09:00'), 'late sign-up told only the remaining reminders');
 
-/* ---------- 4. Reminder 2 + old script's 10:00 trigger on the same sheet ---------- */
-w.at('2026-11-01T07:00:30+02:00');
+/* ---------- 4. Reminder 2 at 16:00 (old 10:00 trigger deleted at release) ---------- */
+w.at('2026-11-01T10:00:00+02:00');
 w.mails = [];
 w.ctx.ruleazaReamintiri();
-eq(w.mails.length, 3, 'R2 to vechi, ana, bogdan');
-const wOld = createWorld();
-wOld.sheets = w.sheets; // same sheet
-wOld.load(...OLD);
-wOld.at('2026-11-01T10:00:00+02:00');
-wOld.ctx.sendReminders();
-eq(wOld.mails.length, 0, 'old 10:00 trigger finds col 8 filled and sends nothing');
+eq(w.mails.length, 0, 'nothing at 10:00: still the 29 Oct window, already sent');
+w.at('2026-11-01T16:00:30+02:00');
+w.mails = [];
+w.ctx.ruleazaReamintiri();
+eq(w.mails.length, 3, 'R2 at 16:00 to vechi, ana, bogdan');
+ok(w.mails.every((x) => x.subject.includes('Mâine')), 'R2 subject');
+w.at('2026-11-01T16:15:30+02:00');
+w.mails = [];
+w.ctx.ruleazaReamintiri();
+eq(w.mails.length, 0, 'R2 backup at 16:15 sends nothing new');
+// Why the old trigger must go: if it is left, it sends the old reminder (no QR) at 10:00 and the new one skips.
+const k = createWorld(); k.load(...NEW);
+k.at('2026-10-26T12:00:00+02:00'); k.ctx.setup();
+k.rsvp('Rămas Vechi', 'r@x.md', 'Da');
+const kOld = createWorld(); kOld.sheets = k.sheets; kOld.load(...OLD);
+kOld.at('2026-11-01T10:00:00+02:00'); kOld.ctx.sendReminders();
+eq(kOld.mails.length, 1, 'old 10:00 trigger, if not deleted, sends its old reminder');
+k.at('2026-11-01T16:00:30+02:00'); k.mails = []; k.ctx.ruleazaReamintiri();
+eq(k.mails.length, 0, '…and the new 16:00 reminder then skips that guest');
+eq(k.ctx.warnings1Nov_(k.ctx.time1Nov_('16:00')).length, 2, 'setup warns about both: old trigger and quota');
 
 /* ---------- 5. Unsubscribe ---------- */
 const anaCode = ana()[C.code];
@@ -222,11 +235,11 @@ g.at('2026-10-29T10:15:30+02:00');
 g.mails = [];
 g.ctx.ruleazaReamintiri();
 eq(g.mails.length, 0, 'alert only once per reminder');
-g.fetch = () => ({ code: 200, text: cfg('NEWID') }); // site uses the new script
-g.at('2026-11-01T07:00:30+02:00');
+g.at('2026-11-01T16:00:30+02:00'); // still rolled back
 g.mails = [];
 g.ctx.ruleazaReamintiri();
-eq(g.mails.map((x) => x.to), ['guest@x.md'], 'site uses this script: reminder sent');
+eq(g.mails.map((x) => x.to), ['guest@x.md'], 'rolled back: the 1 Nov reminder still goes (old trigger deleted)');
+g.fetch = () => ({ code: 200, text: cfg('NEWID') }); // site uses the new script
 g.fetch = () => ({ code: 503, text: '' }); // site unreachable → send anyway
 g.at('2026-11-02T07:30:30+02:00');
 g.mails = [];
@@ -256,6 +269,37 @@ q.mails = [];
 q.ctx.ruleazaReamintiri();
 eq(q.mails.filter((x) => !x.subject.includes('⚠️')).length, 4, 'retry trigger sends the 4 left, none twice');
 
+/* ---------- 11b. Quota with 1 Nov at 16:00: three reminders in 17 hours ---------- */
+function threeReminders(n) {
+  const z = createWorld(); z.load(...NEW);
+  Object.assign(z.props, { TEAM_EMAIL: 'echipa@x.md' });
+  z.at('2026-10-30T12:00:00+02:00'); z.ctx.setup();
+  for (let i = 0; i < n; i++) z.rsvp('Invitat', `g${i}@x.md`, 'Da');
+  z.quota = 100; // worst case: the 1 Nov, 07:30 and 09:00 emails all count against one 100-email window
+  const sent = {};
+  [['r1nov', '2026-11-01T16:00:30+02:00'], ['r0730', '2026-11-02T07:30:30+02:00'], ['r0900', '2026-11-02T09:00:30+02:00'], ['retry', '2026-11-02T09:15:30+02:00']].forEach(([id, at]) => {
+    z.at(at); z.mails = []; z.ctx.ruleazaReamintiri();
+    sent[id] = { guests: z.mails.filter((x) => !x.subject.includes('⚠️')).length, alerts: z.mails.filter((x) => x.subject.includes('⚠️')).length };
+  });
+  return { sent, missed: z.rows().filter((r) => String(r[C.r0900]).includes('cota')).length, quota: z.quota };
+}
+// Team notices: on Sunday at 09:00 all three reminders are in the next 24 h → 31 "Da" guests block them.
+const tn = createWorld(); tn.load(...NEW); Object.assign(tn.props, { TEAM_EMAIL: 'echipa@x.md' });
+tn.at('2026-10-30T12:00:00+02:00'); tn.ctx.setup();
+for (let i = 0; i < 30; i++) tn.rsvp('Invitat', `t${i}@x.md`, 'Da');
+tn.quota = 100; tn.at('2026-11-01T09:05:00+02:00'); tn.mails = [];
+tn.rsvp('Al Treizecilea', 't30@x.md', 'Da');
+eq(tn.mails.map((x) => x.to), ['t30@x.md'], 'Sunday 09:05, 31st guest: confirmation yes, team notice skipped');
+let r32 = threeReminders(32);
+eq([r32.sent.r1nov.guests, r32.sent.r0730.guests, r32.sent.r0900.guests, r32.missed], [32, 32, 32, 0], '32 guests: all three reminders fit');
+let r33 = threeReminders(33);
+eq([r33.sent.r0900.guests, r33.missed, r33.sent.r0900.alerts], [32, 1, 1], '33 guests: 1 misses 09:00 (2 kept for alerts), team alerted');
+let r34 = threeReminders(34);
+eq([r34.sent.r0900.guests, r34.missed], [30, 4], '34 guests (102 emails): 4 miss 09:00');
+let r40 = threeReminders(40);
+eq([r40.sent.r1nov.guests, r40.sent.r0730.guests, r40.sent.r0900.guests, r40.missed], [40, 40, 18, 22], '40 guests: 22 miss the 09:00 reminder');
+eq(r40.sent.retry.guests, 0, 'the 09:15 backup cannot send them either');
+
 /* ---------- 12. Trigger error → alert ---------- */
 const e = createWorld(); e.load(...NEW);
 Object.assign(e.props, { MOD_TEST: 'da', TEST_EMAIL: 'tester@gmail.com', TEAM_EMAIL: 'tester@gmail.com' });
@@ -280,7 +324,7 @@ t.ctx.setup();
 eq(t.triggers.map((x) => t.ctx.fmtDateTime_(x.at)).slice(2, 4), ['01.11.2026 08:30', '01.11.2026 08:45'], 'setting moves both 1 Nov triggers');
 t.rsvp('Ora Test', 'ora@x.md', 'Da');
 t.at('2026-11-01T07:00:30+02:00'); t.mails = []; t.ctx.ruleazaReamintiri();
-ok(t.mails.every((x) => !x.subject.includes('Mâine')), 'nothing at the old 07:00');
+ok(t.mails.every((x) => !x.subject.includes('Mâine')), 'nothing at 07:00');
 t.at('2026-11-01T08:30:30+02:00'); t.mails = []; t.ctx.ruleazaReamintiri();
 eq(t.mails.map((x) => x.subject.includes('Mâine')), [true], '1 Nov reminder at 08:30');
 // Changed without setup: no effect, and the menu says so.

@@ -52,9 +52,13 @@ Le pui în editorul Apps Script → ⚙️ **Setări proiect (Project Settings)*
 | `MOD_TEST` | `da` | **nu o pune** |
 | `TEST_EMAIL` | adresa ta | nu o pune |
 | `FORM_REVIEW_URL`, `FORM_ABSENT_URL` | scrise de `creeazaFormularele` | idem |
-| `ORA_REAMINTIRE_1NOV` | opțional, ex. `08:30` | opțional; implicit `07:00` |
+| `ORA_REAMINTIRE_1NOV` | opțional, ex. `17:30` | opțional; fără ea, ora din cod (`16:00`) |
 
-**Ora reamintirii de duminică** e singura oră care se schimbă din setări: pune `ORA_REAMINTIRE_1NOV` (format `HH:MM`) și **rulează din nou `setup`**. Abia `setup` mută declanșatoarele; până atunci rămâne ora veche (meniul **Arată reamintirile programate** te anunță). O valoare greșită oprește `setup` înainte să schimbe ceva. `setup` te avertizează în jurnal dacă ora e după 07:30 (cota de emailuri, secțiunea 8) sau de la 10:00 încolo (atunci șterge declanșatorul scriptului vechi, altfel invitații primesc la 10:00 reamintirea veche).
+**Ora reamintirii de duminică (acum 16:00)** se schimbă în unul din două locuri:
+- **în cod**: `Cod.gs`, sus, imediat sub blocul `EVENT`: `const DEFAULT_TIME_1NOV = '16:00';`;
+- **fără cod**: Proprietatea script `ORA_REAMINTIRE_1NOV` (format `HH:MM`). Dacă există, are prioritate față de valoarea din cod.
+
+În ambele cazuri **rulează din nou `setup`**: abia el mută declanșatoarele (ora + rezerva la +15 minute). Până atunci rămâne ora veche, iar meniul **Arată reamintirile programate** te anunță. O valoare greșită oprește `setup` înainte să schimbe ceva. `setup` scrie în jurnal un ATENȚIE dacă ora e după 07:30 (cota de emailuri, secțiunea 8) sau de la 10:00 încolo (declanșatorul vechi, secțiunea 5, pasul 12). La 16:00 apar amândouă.
 
 Cu `MOD_TEST = da`, scriptul **refuză să trimită emailuri altcuiva** decât `TEST_EMAIL` (și variantelor `adresa+ceva@gmail.com`). Chiar dacă în copie ar rămâne o adresă reală, ea nu primește nimic.
 
@@ -131,7 +135,7 @@ Fă pașii logat **doar** în fe.giftme@gmail.com, într-o fereastră privată.
 10. Verificare pe giftme.site cu adresa ta: înscriere → bilet cu QR → scanare cu PIN. Apoi șterge-ți rândul din foaie.
 11. **Biletul cu QR pentru cei care au confirmat înainte de lansare:** reîncarcă foaia → **GiftMe → Trimite biletul cu QR celor care nu l-au primit** → verifică numărul și cota afișate → **Da**. Un email per invitat; cine l-a primit deja nu-l mai primește (coloana „Bilet QR trimis”). Dacă unii rămân netrimiși (cota zilei), rulează din nou a doua zi.
 
-Declanșatorul vechi (1 noiembrie, 10:00, din proiectul vechi) **rămâne**: când pornește, găsește coloana 8 completată de reamintirea nouă de la 07:00 și nu trimite nimic. El contează doar dacă revii la scriptul vechi.
+12. **Șterge declanșatorul vechi de duminică** (obligatoriu cu reamintirea la 16:00): deschide proiectul **vechi** „GiftMe RSVP” pe script.google.com → ⏰ **Declanșatoare (Triggers)** → rândul `sendReminders` → ⋮ → **Șterge declanșatorul**. Nu schimba nimic altceva acolo (codul și implementarea rămân, pentru revenire). Dacă rămâne, el pornește la 10:00, înaintea celei noi, și trimite reamintirea veche, fără QR; la 16:00, scriptul nou îi găsește pe toți „trimiși” și nu mai trimite nimic.
 
 ---
 
@@ -147,8 +151,8 @@ live: 'https://script.google.com/macros/s/AKfycbwFSO9fIvZ7RBpFYwfwNNyw6QyKtbpmvk
 
 Ce se întâmplă singur după acest pas:
 - formularul trimite din nou la scriptul vechi, care merge pe aceeași foaie (coloanele 1–8 sunt neschimbate);
-- înaintea fiecărei reamintiri, scriptul nou citește `rsvp-config.js`. Văzând că `live:` nu mai e URL-ul lui, **nu trimite** și anunță echipa o singură dată;
-- declanșatorul vechi de duminică, 10:00, trimite reamintirea veche, ca înainte;
+- înaintea reamintirilor de joi și de luni, scriptul nou citește `rsvp-config.js`. Văzând că `live:` nu mai e URL-ul lui, **nu trimite** și anunță echipa o singură dată per reamintire;
+- reamintirea de duminică, 16:00, **pleacă totuși din scriptul nou**: declanșatorul vechi de la 10:00 a fost șters la lansare, iar scriptul vechi avea și el o reamintire de duminică. Dacă vreți să nu mai plece nimic din scriptul nou, rulați în el `stergeDeclansatoarele`;
 - scanarea la intrare merge mai departe prin `liveCheckin:` (scriptul nou), pe aceeași foaie.
 
 Dacă site-ul nu poate fi citit (cădere Vercel), scriptul nou trimite oricum reamintirile: o cădere a site-ului nu trebuie să oprească reamintirile din ziua evenimentului.
@@ -170,21 +174,30 @@ Dacă site-ul nu poate fi citit (cădere Vercel), scriptul nou trimite oricum re
 
 | Reamintire | Ora | Rezervă (reîncearcă erorile, anunță dacă prima n-a rulat) | Valabilă până la |
 |---|---|---|---|
-| 1 – joi, 29 octombrie | 10:00 | 10:15 | 1 nov, 07:00 |
-| 2 – duminică, 1 noiembrie | 07:00 (setarea `ORA_REAMINTIRE_1NOV`) | +15 min | 2 nov, 07:30 |
+| 1 – joi, 29 octombrie | 10:00 | 10:15 | 1 nov, 16:00 |
+| 2 – duminică, 1 noiembrie | **16:00** (setarea `DEFAULT_TIME_1NOV` / `ORA_REAMINTIRE_1NOV`) | 16:15 | 2 nov, 07:30 |
 | 3 – luni, 2 noiembrie | 07:30 | 07:45 | 2 nov, 09:00 |
 | 4 – luni, 2 noiembrie | 09:00 | 09:15 | 2 nov, 09:30 |
 
-Reamintirea de duminică e implicit la 07:00, nu la 10:00 ca în scriptul vechi: așa e la peste 24 de ore înaintea celei de luni de la 07:30 și nu consumă din aceeași zi de cotă Gmail.
-
 **Cota.** Google nu publică cota exactă a unui cont. Pentru un cont Gmail obișnuit e de regulă **100 de destinatari pe zi**. Aflați cifra reală cu **verificaCota** în proiectul live (sau, înainte de lansare, într-un proiect gol din contul fe.giftme, cu `function cota() { Logger.log(MailApp.getRemainingDailyQuota()); }`).
 
-Calculul pentru ziua evenimentului, cu 40 de invitați: 40 (07:30) + 40 (09:00) = **80**, plus 2 pentru fiecare înscriere sau schimbare din ultimele 24 de ore (confirmarea + notificarea echipei). Cu 100 pe zi încape, dar la limită (cel mult ~8 înscrieri de ultim moment). Ca să nu rămână fără loc invitații, scriptul:
-- nu trimite notificarea echipei dacă emailurile rămase nu ajung pentru reamintirile din următoarele 24 de ore (scrie „sărită” în foaie; echipa vede totul în foaie);
-- păstrează mereu 2 emailuri pentru alerte;
-- dacă se termină cota, marchează „eroare: cota…” și reîncearcă la declanșatorul de rezervă.
+**Cu reamintirea de duminică la 16:00**, toate trei (duminică 16:00, luni 07:30, luni 09:00) cad în 17 ore, deci în aceleași 24 de ore. Cu N invitați cu „Da”, au nevoie de **3 × N** emailuri, plus 1–2 pentru fiecare înscriere sau schimbare din acest interval (confirmarea + notificarea echipei). Cazul cel mai rău, cu 100 pe zi și nimic altceva trimis:
 
-Dacă `verificaCota` arată sub 100, cea mai simplă soluție: pe 2 noiembrie nu mai trimiteți invitații la formular, ci îi adăugați de mână în foaie (secțiunea 7).
+| Invitați cu „Da” | Emailuri pentru cele 3 reamintiri | Ce se întâmplă |
+|---|---|---|
+| până la 32 | până la 96 | încap toate |
+| 33 | 99 | 1 invitat nu primește reamintirea de la 09:00 (scriptul păstrează 2 emailuri pentru alerte) |
+| 34 | 102 | **peste 100**: 4 rămân fără reamintirea de la 09:00 |
+| 40 | 120 | 22 rămân fără reamintirea de la 09:00 |
+
+Fiecare înscriere de ultim moment scade pragul cu 1–2. Ce face scriptul când nu ajung emailurile:
+- **notificările echipei se opresc primele**: dacă emailurile rămase nu acoperă reamintirile din următoarele 24 de ore (+7 de rezervă), notificarea nu pleacă și în coloana „Notificare echipă” apare „sărită: păstrăm emailurile pentru invitați”. De duminică, 09:00, toate trei reamintirile sunt în următoarele 24 de ore, deci cu 31 sau mai mulți invitați cu „Da” (3 × 31 + 7 = 100) nu mai pleacă nicio notificare de duminică, 09:00, până luni, 09:30; echipa urmărește foaia;
+- **confirmările pentru invitații noi pleacă mereu**, cât mai există cotă (și consumă din cea a reamintirilor);
+- **reamintirile se opresc când mai rămân 2 emailuri**; invitații rămași (cei de pe rândurile de jos, adică ultimii înscriși) primesc în celulă „eroare: cota zilnică de emailuri s-a terminat”. Cine e deja marcat „Venit?” nu are nevoie de reamintirea de la 09:00 și nu consumă nimic;
+- **echipa primește o alertă** („⚠️ GiftMe RSVP: Probleme la reamintirea…”) cu lista celor neexpediați, trimisă din cele 2 emailuri păstrate;
+- declanșatorul de rezervă (+15 minute) reîncearcă, dar dacă nu s-a eliberat cota, nu reușește nici el.
+
+Dacă nu știți sigur că sunt sub ~30 de invitați cu „Da”: rulați **verificaCota** pe 31 octombrie. Dacă arată 100, cea mai simplă soluție e o oră de duminică înainte de 07:30 (atunci duminica nu mai împarte cele 24 de ore cu luni și pragul urcă la 49 de invitați (2 × 49 = 98)); un cont Google Workspace (1.500 pe zi) rezolvă și el problema. Pe 2 noiembrie, invitații fără bilet se adaugă de mână în foaie (secțiunea 7), nu prin formular.
 
 ---
 
@@ -195,7 +208,7 @@ Dacă `verificaCota` arată sub 100, cea mai simplă soluție: pe 2 noiembrie nu
 3. Testele din secțiunea 4, apoi `stergeDeclansatoarele` în copie.
 4. La lansare, în contul fe.giftme: copia de siguranță, proiectul legat de foaia live, lipirea, **`STAFF_PIN`**, `setup` + **autorizarea**, `creeazaFormularele` (+ verificarea formularelor în fereastră privată), implementarea, `WEB_APP_URL`, din nou `setup` (care **creează declanșatoarele**), `verificaCota`.
 5. Trimiteți-mi URL-ul `/exec` live (pentru `live:` și `liveCheckin:`), aprobați publicarea pe `main`.
-6. Imediat după publicare: **GiftMe → Trimite biletul cu QR celor care nu l-au primit** (secțiunea 5, pasul 11).
+6. Imediat după publicare: **GiftMe → Trimite biletul cu QR celor care nu l-au primit** (secțiunea 5, pasul 11) și **ștergerea declanșatorului vechi** `sendReminders` din proiectul vechi (secțiunea 5, pasul 12).
 7. Pe 1 noiembrie: lista tipărită și foaia disponibilă offline pe telefoane; PIN-ul introdus pe telefoanele de la intrare.
 8. După eveniment: marcarea prezenței, apoi **Trimite follow-up**.
 9. Pentru răspunsurile „STOP” primite pe email: puneți data în coloana „Fără emailuri”.

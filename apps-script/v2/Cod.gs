@@ -45,9 +45,14 @@ const EVENT = {
   start: new Date('2026-11-02T09:30:00+02:00'),
 };
 
+// ORA REAMINTIRII DE DUMINICĂ, 1 noiembrie (ora Chișinăului, „HH:MM”). Rezerva rulează cu 15 minute mai târziu.
+// Se poate schimba și fără cod: Proprietatea script ORA_REAMINTIRE_1NOV are prioritate față de valoarea de aici.
+// În ambele cazuri, ora nouă intră în vigoare abia după ce rulezi setup (care mută declanșatoarele).
+const DEFAULT_TIME_1NOV = '16:00';
+
 // Ora Chișinăului: după 25 octombrie 2026 e UTC+2. Fiecare reamintire e valabilă până la
 // ora următoarei (ultima, până la 09:30): una întârziată nu mai pleacă după ce a venit rândul celeilalte.
-// Ora celei de duminică e o setare: Proprietatea script ORA_REAMINTIRE_1NOV (implicit 07:00),
+// Ora celei de duminică e DEFAULT_TIME_1NOV de mai sus (sau Proprietatea script ORA_REAMINTIRE_1NOV),
 // citită de setup(), care creează și declanșatoarele (vezi reminders_()).
 const REMINDERS = [
   {
@@ -71,7 +76,6 @@ const REMINDERS = [
     when: 'Astăzi, la ora 09:30', calendar: false,
   },
 ];
-const DEFAULT_TIME_1NOV = '07:00';
 const RETRY_AFTER_MIN = 15;   // al doilea declanșator al fiecărei reamintiri: reîncearcă erorile
 const LATE_AFTER_MIN = 10;    // dacă primul declanșator n-a rulat până atunci, echipa e anunțată
 
@@ -619,8 +623,10 @@ function runReminders_(now, opt) {
       notes.push(`Declanșatorul de la ${fmtDateTime_(rem.at)} nu a rulat la timp; a trimis cel de rezervă, la ${fmtDateTime_(now)}.`);
     }
     props.setProperty(ranKey, now.toISOString());
-    // Revenire la scriptul vechi = site-ul trimite din nou formularul acolo. Atunci tăcem.
-    if (!s.test && siteUsesThisScript_(s) === false) {
+    // Revenire la scriptul vechi = site-ul trimite din nou formularul acolo. Atunci tăcem, cu o excepție:
+    // reamintirea de duminică pleacă oricum, pentru că declanșatorul vechi de la 10:00 e șters la lansare
+    // (altfel ar trimite el, la 10:00, reamintirea veche fără QR, înaintea celei noi).
+    if (!s.test && rem.id !== 'r1nov' && siteUsesThisScript_(s) === false) {
       alertOnce_('site_' + rem.id, `Reamintirea „${rem.label}” NU a fost trimisă`,
         `Site-ul nu mai trimite formularul la acest script (WEB_APP_URL nu apare la „live” în ${s.site}/confirma-prezenta/rsvp-config.js).\n`
         + 'Dacă ați revenit intenționat la scriptul vechi, e normal. Dacă nu, verificați rsvp-config.js și proprietatea WEB_APP_URL.', s);
