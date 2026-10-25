@@ -230,7 +230,8 @@ function upsert(values) {
   }
 
   if (!saved) {
-    const nr = sheet.getLastRow(); // rândul 1 = antet
+    // Numărul invitatului: cel mai mare de până acum + 1 (scriptul vechi folosea rândul − 1: același rezultat fără goluri).
+    const nr = rows.reduce((max, r) => Math.max(max, Number(val(r, COL.nr)) || 0), 0) + 1;
     const code = newTicketCode_();
     const line = HEADERS.map(() => '');
     line[COL.sent - 1] = now;
@@ -243,8 +244,10 @@ function upsert(values) {
       line[COL.yesSince - 1] = now;
       reminders_().forEach((rem) => { if (rem.at <= now) line[rem.col - 1] = LATE_SIGNUP; });
     }
-    sheet.appendRow(line);
-    const row = sheet.getLastRow();
+    // Nu appendRow: o bifă FALSE pe un rând gol l-ar face să scrie sub ea (vezi firstFreeRow_).
+    const row = firstFreeRow_(sheet);
+    if (row > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), row - sheet.getMaxRows());
+    sheet.getRange(row, 1, 1, HEADERS.length).setValues([line]);
     sheet.getRange(row, COL.came).setDataValidation(checkboxRule_());
     rows.push({ row: row, v: line });
     saved = { sheet: sheet, row: row, nr: nr, code: code, changed: true, isNew: true, previous: '' };
@@ -283,20 +286,79 @@ function ensureLayout_(sheet) {
   if (current.every((h, i) => h === HEADERS[i])) return;
   sheet.getRange(1, 1, 1, width).setValues([HEADERS]).setFontWeight('bold');
   sheet.setFrozenRows(1);
-  const rows = Math.max(sheet.getMaxRows() - 1, 1);
-  sheet.getRange(2, COL.came, rows, 1).setDataValidation(checkboxRule_());
-  // Text simplu: un cod ca „123e4567…” nu trebuie citit ca număr.
-  sheet.getRange(2, COL.code, rows, 1).setNumberFormat('@');
+  // Text simplu: un cod ca „123e4567…” nu trebuie citit ca număr. (Formatul nu scrie nimic în celule.)
+  sheet.getRange(2, COL.code, Math.max(sheet.getMaxRows() - 1, 1), 1).setNumberFormat('@');
+  fixCheckboxes_(sheet);
+}
+
+/**
+ * Bifa „Venit?” stă doar pe rândurile cu invitați. Pusă pe o celulă goală, Google scrie FALSE în ea,
+ * iar un FALSE pe un rând altfel gol mută getLastRow()/appendRow (și scriptul vechi) sub el.
+ * Așa că: bifă pe rândurile cu date; pe rândurile goale, nici regulă, nici FALSE.
+ * Un rând gol pe care cineva a bifat sau a scris ceva de mână nu e atins. Rulat de setup.
+ */
+function fixCheckboxes_(sheet) {
+  const last = sheet.getLastRow();
+  const report = { cleared: 0, added: 0, kept: [] };
+  if (last >= 2) {
+    const values = sheet.getRange(2, 1, last - 1, HEADERS.length).getValues();
+    const runs = { add: [], clear: [] };
+    values.forEach((v, i) => {
+      const row = i + 2;
+      if (hasData_(v)) {
+        if (!sheet.getRange(row, COL.came).getDataValidation()) { pushRun_(runs.add, row); report.added++; }
+      } else if (isBlankRow_(v)) {
+        if (v[COL.came - 1] === false) report.cleared++;
+        pushRun_(runs.clear, row);
+      } else {
+        report.kept.push(row);
+      }
+    });
+    runs.add.forEach(([a, b]) => sheet.getRange(a, COL.came, b - a + 1, 1).setDataValidation(checkboxRule_()));
+    runs.clear.forEach(([a, b]) => sheet.getRange(a, COL.came, b - a + 1, 1).clearDataValidations().clearContent());
+  }
+  // Sub ultimul rând folosit: doar regula, dacă a rămas (acolo nu există valori).
+  const below = Math.max(last, 1) + 1;
+  if (below <= sheet.getMaxRows()) sheet.getRange(below, COL.came, sheet.getMaxRows() - below + 1, 1).clearDataValidations();
+  return report;
+}
+
+function pushRun_(runs, row) {
+  const lastRun = runs[runs.length - 1];
+  if (lastRun && lastRun[1] === row - 1) lastRun[1] = row;
+  else runs.push([row, row]);
 }
 
 function checkboxRule_() {
   return SpreadsheetApp.newDataValidation().requireCheckbox().build();
 }
 
+/** Rândurile cu invitați (ceva în „Trimis la”, „Nume” sau „Email”). Rândurile goale sau doar cu o bifă FALSE nu contează. */
 function readRows_(sheet) {
   const last = sheet.getLastRow();
   if (last < 2) return [];
-  return sheet.getRange(2, 1, last - 1, HEADERS.length).getValues().map((v, i) => ({ row: i + 2, v: v }));
+  return sheet.getRange(2, 1, last - 1, HEADERS.length).getValues()
+    .map((v, i) => ({ row: i + 2, v: v }))
+    .filter((r) => hasData_(r.v));
+}
+
+function hasData_(v) {
+  return [COL.sent, COL.nume, COL.email].some((c) => v[c - 1] !== '' && v[c - 1] != null);
+}
+
+/** Gol de tot; un FALSE în „Venit?” (bifa nebifată) contează ca gol. */
+function isBlankRow_(v) {
+  return v.every((x, i) => x === '' || x == null || (i === COL.came - 1 && x === false));
+}
+
+/** Primul rând gol sub antet (după regula din isBlankRow_), altfel primul de după ultimul rând. */
+function firstFreeRow_(sheet) {
+  const last = sheet.getLastRow();
+  if (last >= 2) {
+    const values = sheet.getRange(2, 1, last - 1, HEADERS.length).getValues();
+    for (let i = 0; i < values.length; i++) if (isBlankRow_(values[i])) return i + 2;
+  }
+  return Math.max(last, 1) + 1;
 }
 
 function val(r, col) {
@@ -382,24 +444,40 @@ function ticketAction_(body) {
   }
 }
 
-/** Bifa „Venit?” pusă de mână: completăm ora și „manual”. Debifată: golim ora. */
+/**
+ * Editări de mână în fila Confirmări:
+ *  - bifa „Venit?”: completăm ora și „manual”; debifată, golim ora;
+ *  - un rând nou scris de mână (invitat fără bilet) primește bifa „Venit?”;
+ *  - o bifă debifată pe un rând fără invitat se șterge, ca rândul să rămână liber.
+ */
 function onEdit(e) {
   const range = e && e.range;
   if (!range || range.getSheet().getName() !== SHEET_NAME) return;
-  if (COL.came < range.getColumn() || COL.came > range.getLastColumn()) return;
   const first = Math.max(2, range.getRow());
   const count = range.getLastRow() - first + 1;
   if (count < 1) return;
   const sheet = range.getSheet();
-  const block = sheet.getRange(first, COL.came, count, 3).getValues();
+  const touchesCame = range.getColumn() <= COL.came && range.getLastColumn() >= COL.came;
+  const touchesGuest = range.getColumn() <= COL.email;
+  if (!touchesCame && !touchesGuest) return;
+  const block = sheet.getRange(first, 1, count, HEADERS.length).getValues();
   const now = new Date();
-  let dirty = false;
-  const out = block.map(([came, at, via]) => {
-    if (isChecked_(came) && !at) { dirty = true; return [came, now, 'manual']; }
-    if (!isChecked_(came) && (at || via)) { dirty = true; return [came, '', '']; }
-    return [came, at, via];
+  block.forEach((v, i) => {
+    const row = first + i;
+    const came = v[COL.came - 1];
+    const at = v[COL.cameAt - 1];
+    const via = v[COL.cameVia - 1];
+    if (!hasData_(v)) {
+      if (touchesCame && !isChecked_(came) && (came !== '' || at || via)) sheet.getRange(row, COL.came, 1, 3).clearContent();
+      return;
+    }
+    if (touchesGuest && !sheet.getRange(row, COL.came).getDataValidation()) {
+      sheet.getRange(row, COL.came).setDataValidation(checkboxRule_());
+    }
+    if (!touchesCame) return;
+    if (isChecked_(came) && !at) sheet.getRange(row, COL.cameAt, 1, 2).setValues([[now, 'manual']]);
+    else if (!isChecked_(came) && (at || via)) sheet.getRange(row, COL.cameAt, 1, 2).setValues([['', '']]);
   });
-  if (dirty) sheet.getRange(first, COL.came, count, 3).setValues(out);
 }
 
 function isChecked_(v) {
@@ -949,6 +1027,7 @@ function setup() {
   const oldTz = ss.getSpreadsheetTimeZone();
   if (oldTz !== TZ) ss.setSpreadsheetTimeZone(TZ);
   const sheet = getSheet();
+  const boxes = fixCheckboxes_(sheet);
   const codes = ensureCodes_(sheet);
   const planned = setupTriggers_();
   const s = settings_();
@@ -956,6 +1035,8 @@ function setup() {
     'Foaia: ' + ss.getUrl(),
     oldTz !== TZ ? `Fusul orar al foii: ${oldTz} → ${TZ}` : `Fusul orar al foii: ${TZ}`,
     `Coduri de bilet noi: ${codes}`,
+    `Bifa „Venit?”: adăugată pe ${boxes.added} rânduri cu invitați, ștearsă de pe ${boxes.cleared} rânduri goale`
+      + (boxes.kept.length ? `; NEATINSE (rânduri fără nume/email, dar cu ceva scris): ${boxes.kept.join(', ')}` : ''),
     `Reamintirea de duminică: ${fmtDateTime_(at1Nov)} (ORA_REAMINTIRE_1NOV${props.getProperty('ORA_REAMINTIRE_1NOV') ? '' : ', implicit'})`,
     ...warnings1Nov_(at1Nov),
     'Declanșatoare create (ora Chișinăului):',

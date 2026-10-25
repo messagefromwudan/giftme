@@ -29,7 +29,7 @@ Coloanele 1–8 sunt exact cele vechi, în aceeași ordine (de aceea scriptul ve
 | 10 | Da din | când a răspuns „Da” |
 | 11 | Bilet QR trimis | când a plecat biletul cu QR |
 | 12–14 | Reamintire 29 oct / 2 nov 07:30 / 2 nov 09:00 | ora sau motivul |
-| 15 | **Venit?** | bifă: se pune la scanare sau de mână |
+| 15 | **Venit?** | bifă, **doar pe rândurile cu invitați** (pe rândurile goale nu e nimic): se pune la scanare sau de mână |
 | 16–17 | Venit la / Marcat prin | ora și „scanare” sau „manual” |
 | 18 | Follow-up trimis | „părere · …” sau „absent · …” |
 | 19 | Fără emailuri | data la care a cerut să nu mai primească emailuri |
@@ -91,7 +91,8 @@ Toate emailurile vin din contul tău, pentru că pe copie scriptul rulează în 
 
 | # | Pas | Rezultat așteptat |
 |---|---|---|
-| 1 | După `setup`, uită-te la foaie | 20 de coloane; rândurile vechi au „Cod bilet”, rândul cu „Da” are „Da din”; bife goale la „Venit?” |
+| 1 | După `setup`, uită-te la foaie | 20 de coloane; rândurile vechi au „Cod bilet”, rândul cu „Da” are „Da din”; bife nebifate la „Venit?” **doar** pe rândurile cu invitați; sub ultimul invitat, coloana O e goală |
+| 1a | Înscrie-te pe pagină | rândul nou apare imediat sub ultimul invitat (nu la 1001) |
 | 2 | Pe previzualizare, `/confirma-prezenta/`: nume, `adresa+ana@gmail.com`, **Da** | biletul pe pagină; un email „Biletul tău…” cu nume, data, ora 09:30, locul, **codul QR**, butoanele de calendar, lista reamintirilor și linkul „oprește mesajele”; un al doilea email „RSVP Da: … (răspuns nou)” pentru echipă |
 | 3 | Trimite din nou exact același răspuns | doar emailul echipei („a trimis din nou același răspuns”) |
 | 4 | Schimbă răspunsul pe **Nu**, apoi înapoi pe **Da** | de fiecare dată confirmarea potrivită + notificarea echipei |
@@ -162,7 +163,7 @@ Dacă site-ul nu poate fi citit (cădere Vercel), scriptul nou trimite oricum re
 ## 7. La intrare, pe 2 noiembrie
 
 - **Telefoanele echipei**: deschid o dată orice bilet, apasă „Ești din echipa GiftMe?”, introduc PIN-ul. De acum, fiecare QR scanat cu camera acelui telefon marchează invitatul. Folosiți browserul obișnuit al telefonului (nu o fereastră privată, unde PIN-ul nu se păstrează).
-- **Invitat fără bilet**: în foaie, pe primul rând gol, scrieți numele, emailul dacă îl dă (pentru follow-up), „Da” la „Prezent(ă)” și bifați „Venit?”. Ora se completează singură. Nu-l trimiteți să completeze formularul la ușă: asta consumă 2 emailuri din cota zilei.
+- **Invitat fără bilet**: în foaie, pe primul rând gol, scrieți **întâi numele** (atunci apare bifa „Venit?” pe rând), emailul dacă îl dă (pentru follow-up), „Da” la „Prezent(ă)”, apoi bifați „Venit?”. Ora se completează singură. Nu adăugați bife pe rândurile goale (Inserare → Casetă de selectare): o bifă nebifată pe un rând gol ar face scriptul vechi, la o revenire, să scrie sub ea. Nu-l trimiteți să completeze formularul la ușă: asta consumă 2 emailuri din cota zilei.
 - **Fără internet la ușă**: (1) cu o zi înainte, **Fișier → Descarcă → PDF** cu lista (Nume, Nr. invitat) și tipăriți-o; (2) în aplicația Google Sheets de pe telefon: ⋮ pe fișier → **Disponibil offline**. Bifele puse offline se sincronizează când revine internetul. Biletul din email arată numele și numărul, deci invitatul se găsește ușor în listă. (3) Datele mobile ale unui telefon pot servi ca rezervă pentru Wi-Fi.
 - **Follow-up**: doar după ce ați terminat de marcat prezența, din **GiftMe → Trimite follow-up** (cere „GATA”). Nu pleacă nimic automat.
 

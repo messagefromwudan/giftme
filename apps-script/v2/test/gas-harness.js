@@ -42,6 +42,7 @@ function createWorld() {
       getMaxRows: () => maxRows,
       getMaxColumns: () => maxCols,
       insertColumnsAfter(after, n) { maxCols += n; },
+      insertRowsAfter(after, n) { maxRows += n; },
       setFrozenRows() {},
       appendRow(values) { const r = sheet.getLastRow(); values.forEach((v, i) => set(r, i, v)); if (r + 1 > maxRows) maxRows = r + 1; },
       getRange(row, col, nr = 1, nc = 1) {
@@ -55,7 +56,17 @@ function createWorld() {
           setValue(v) { for (let i = 0; i < nr; i++) for (let j = 0; j < nc; j++) set(row - 1 + i, col - 1 + j, v); return range; },
           setFontWeight: () => range,
           setNumberFormat: () => range,
-          setDataValidation(rule) { for (let i = 0; i < nr; i++) validation[(row + i) + ':' + col] = rule; return range; },
+          // Like real Google Sheets: a checkbox rule turns every empty cell it covers into FALSE.
+          setDataValidation(rule) {
+            for (let i = 0; i < nr; i++) for (let j = 0; j < nc; j++) {
+              validation[(row + i) + ':' + (col + j)] = rule;
+              if (rule === 'checkbox' && get(row - 1 + i, col - 1 + j) === '') set(row - 1 + i, col - 1 + j, false);
+            }
+            return range;
+          },
+          getDataValidation: () => validation[row + ':' + col] || null,
+          clearDataValidations() { for (let i = 0; i < nr; i++) for (let j = 0; j < nc; j++) delete validation[(row + i) + ':' + (col + j)]; return range; },
+          clearContent() { for (let i = 0; i < nr; i++) for (let j = 0; j < nc; j++) if (cells[row - 1 + i]) cells[row - 1 + i][col - 1 + j] = ''; return range; },
         };
         return range;
       },

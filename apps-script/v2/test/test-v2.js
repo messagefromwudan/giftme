@@ -165,9 +165,9 @@ eq(ana()[C.r0730], 'nu: a cerut să nu mai primească emailuri');
 /* ---------- 7. Check-in ---------- */
 const bCode = bogdan()[C.code];
 eq(w.post({ action: 'verify', code: bCode }), { ok: true, status: 'valid' }, 'verify without PIN: valid, no name');
-eq(bogdan()[C.came], '', 'verify marks nothing');
+eq(bogdan()[C.came], false, 'verify marks nothing');
 eq(w.post({ action: 'checkin', code: bCode, pin: '000000' }), { ok: false, error: 'wrong_pin' }, 'wrong PIN refused');
-eq(bogdan()[C.came], '', 'wrong PIN marks nothing');
+eq(bogdan()[C.came], false, 'wrong PIN marks nothing');
 w.at('2026-11-02T08:50:00+02:00');
 eq(w.post({ action: 'checkin', code: bCode, pin: '482913' }), { ok: true, status: 'checked_in', name: 'Bogdan Târziu', at: '08:50', answer: 'Da' }, 'check-in');
 eq(bogdan()[C.came], true); eq(bogdan()[C.cameVia], 'scanare');
@@ -340,5 +340,86 @@ eq(t.triggers.length, triggersBefore, 'invalid value leaves triggers alone');
 eq(t.ctx.warnings1Nov_(t.ctx.time1Nov_('07:00')).length, 0, '07:00: no warning');
 eq(t.ctx.warnings1Nov_(t.ctx.time1Nov_('08:00')).length, 1, '08:00: quota warning');
 eq(t.ctx.warnings1Nov_(t.ctx.time1Nov_('18:00')).length, 2, '18:00: old-trigger + quota warnings');
+
+
+/* ---------- 16. FALSE checkboxes on 1000 empty rows (the bug from the test copy) ---------- */
+// The state the earlier setup left: v2 headers, checkbox rule + FALSE on rows 2–1000, the first sign-up at 1001.
+const V2_HEADERS = w.sheet().cells[0]; // the 20 headers written by setup in section 1
+function buggySheet() {
+  const b = createWorld(); b.load(...NEW);
+  Object.assign(b.props, { TEAM_EMAIL: 'echipa@x.md' });
+  const sh = b.ctx.SpreadsheetApp.getActiveSpreadsheet().insertSheet('Confirmări');
+  sh.getRange(1, 1, 1, 20).setValues([V2_HEADERS]);
+  sh.getRange(2, 15, 999, 1).setDataValidation('checkbox'); // Google writes FALSE into all of them
+  return { b, sh };
+}
+{
+  const { b, sh } = buggySheet();
+  eq(sh.getLastRow(), 1000, 'reproduced: FALSE values make getLastRow() 1000');
+  b.at('2026-10-26T12:00:00+02:00');
+  b.rsvp('Prima Persoana', 'p1@x.md', 'Da');
+  eq(sh.cells[1][2], 'p1@x.md', 'even before setup cleans up, a sign-up goes to row 2');
+  eq(sh.cells[1][5], 1, 'and gets Nr. 1');
+  b.rsvp('A Doua', 'p2@x.md', 'Da');
+  eq(sh.cells[2][2], 'p2@x.md', 'next one to row 3');
+  eq(b.ctx.readRows_(sh).length, 2, 'the 998 FALSE rows are not guests');
+  b.ctx.verificaCota();
+  ok(b.alerts.some((a) => a.includes('Invitați cu „Da” care primesc reamintiri: 2.')), 'Da count ignores the FALSE rows');
+  b.at('2026-10-29T10:00:30+02:00'); b.mails = []; b.ctx.ruleazaReamintiri();
+  eq(b.mails.filter((m) => !m.subject.includes('⚠️')).length, 2, 'reminder only to the 2 guests');
+  // setup cleans up.
+  b.at('2026-10-29T12:00:00+02:00');
+  b.ctx.setup();
+  eq(sh.getLastRow(), 3, 'after setup: last row = last guest');
+  eq(sh.cells.slice(3).some((r) => r && r[14] === false), false, 'no FALSE left on empty rows');
+  eq([Boolean(sh.validation['2:15']), Boolean(sh.validation['3:15']), Boolean(sh.validation['4:15']), Boolean(sh.validation['1000:15'])], [true, true, false, false], 'checkbox only on guest rows');
+  // The old script (rollback) now appends at row 4 again.
+  const o2 = createWorld(); o2.sheets = b.sheets; o2.load(...OLD);
+  o2.at('2026-10-29T13:00:00+02:00');
+  JSON.parse(o2.ctx.doPost({ postData: { contents: JSON.stringify({ nume: 'Script Vechi', email: 'v@x.md', prezenta: 'Da', t: 5000, cid: 'z' }) } }).text);
+  eq(sh.cells[3][2], 'v@x.md', 'old script appends right under the guests after cleanup');
+}
+{
+  // The test copy as it is now: rows 2–1000 FALSE, the real sign-up at row 1001 with Nr. 1000.
+  const { b, sh } = buggySheet();
+  sh.getRange(1001, 1, 1, 20).setValues([[new b.Date('2026-10-25T18:00:00+02:00'), 'Test Copie', 'tester@gmail.com', 'Da', '', 1000, new b.Date(), '', 'c'.repeat(32), new b.Date('2026-10-25T18:00:00+02:00'), new b.Date(), '', '', '', false, '', '', '', '', new b.Date()]]);
+  b.at('2026-10-26T12:00:00+02:00');
+  b.ctx.setup();
+  eq(sh.getLastRow(), 1001, 'setup keeps the guest at 1001');
+  eq(sh.cells.slice(1, 1000).some((r) => r && r[14] === false), false, 'and clears FALSE on rows 2–1000');
+  b.rsvp('Urmatorul', 'n@x.md', 'Da');
+  eq([sh.cells[1][2], sh.cells[1][5]], ['n@x.md', 1001], 'next sign-up fills row 2; number = highest + 1 (fix Nr. 1000 → 1 by hand)');
+}
+{
+  // The live Sheet shape: old 8-column layout, 6 guests, no checkboxes.
+  const l = createWorld(); l.load(...NEW);
+  Object.assign(l.props, { TEAM_EMAIL: 'echipa@x.md', WEB_APP_URL: 'https://script.google.com/macros/s/NEWID/exec' });
+  const sh = l.ctx.SpreadsheetApp.getActiveSpreadsheet().insertSheet('Confirmări');
+  sh.appendRow(['Trimis la', 'Nume, prenume', 'Email', 'Prezent(ă)', 'Actualizat la', 'Nr. invitat', 'Confirmare trimisă', 'Reamintire trimisă']);
+  for (let i = 1; i <= 6; i++) sh.appendRow([new l.Date('2026-10-20T10:00:00+03:00'), 'Invitat Live', `l${i}@x.md`, i % 3 ? 'Da' : 'Nu', '', i, new l.Date(), '']);
+  l.at('2026-10-27T12:00:00+02:00');
+  l.ctx.setup();
+  eq(sh.getLastRow(), 7, 'live: still 7 rows after setup');
+  eq([2, 3, 4, 5, 6, 7].every((r) => sh.validation[r + ':15']), true, 'live: checkbox on the 6 guest rows');
+  eq(Object.keys(sh.validation).filter((k) => k.endsWith(':15')).length, 6, 'live: and nowhere else');
+  l.rsvp('Nou Live', 'nou@x.md', 'Da');
+  eq([sh.cells[7][2], sh.cells[7][5]], ['nou@x.md', 7], 'live: first new sign-up on row 8, Nr. 7');
+  // Walk-in written by hand on row 9: gets the checkbox; ticking fills the time.
+  sh.getRange(9, 2, 1, 3).setValues([['Fara Bilet', '', 'Da']]);
+  l.ctx.onEdit({ range: sh.getRange(9, 2, 1, 3) });
+  ok(sh.validation['9:15'], 'walk-in row gets the checkbox');
+  sh.getRange(9, 15).setValue(true); l.ctx.onEdit({ range: sh.getRange(9, 15) });
+  eq(sh.getRange(9, 17).getValue(), 'manual', 'walk-in ticked by hand');
+  // A box unticked on an empty row is cleared, so the row stays free.
+  sh.getRange(12, 15).setValue(false); l.ctx.onEdit({ range: sh.getRange(12, 15) });
+  eq(sh.getRange(12, 15).getValue(), '', 'FALSE on an empty row is cleared');
+  // A box ticked on an empty row is kept and never overwritten.
+  sh.getRange(10, 15).setValue(true); l.ctx.onEdit({ range: sh.getRange(10, 15) });
+  l.rsvp('Altul Live', 'altul@x.md', 'Da');
+  eq(sh.cells[9][14], true, 'a hand-ticked empty row is not overwritten');
+  eq(sh.cells[10][2], 'altul@x.md', 'the sign-up goes to the next blank row (11)');
+  l.ctx.setup();
+  ok(l.ctx.fixCheckboxes_(sh).kept.includes(10), 'setup reports the hand-ticked row instead of touching it');
+}
 
 console.log(`OK – ${passed} verificări`);
