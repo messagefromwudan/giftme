@@ -19,7 +19,7 @@ type Msg = { role: "user" | "assistant"; content: string };
 const MAX_ASK_MESSAGES = 10;
 const BUBBLE_DELAY_MS = 2500;
 const BUBBLE_EVERY_MS = 12000;
-const BUBBLE_VISIBLE_MS = 5000;
+const BUBBLE_VISIBLE_MS = 10000;
 /** Once the bubble is closed (or the chat opened), it stays hidden for the rest of the visit. */
 const BUBBLE_DISMISSED_KEY = "gifty-bubble-dismissed";
 
@@ -43,7 +43,7 @@ export function ChatWidget({ lang }: { lang: Locale }) {
 
   const wasOpen = useRef(false);
 
-  // The speech bubble: first line after 2.5 s, the next one every 12 s, each shown for 5 s.
+  // The speech bubble: first line after 2.5 s, the next one every 12 s, each shown for 10 s.
   const [bubbleLine, setBubbleLine] = useState(0);
   const [bubbleShown, setBubbleShown] = useState(false);
   const [bubbleDismissed, setBubbleDismissed] = useState(false);
