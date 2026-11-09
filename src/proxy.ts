@@ -11,6 +11,8 @@ export function proxy(request: NextRequest) {
 
   // The static RSVP page is served as-is (its folder URL is rewritten in next.config.ts).
   if (pathname.startsWith("/confirma-prezenta/")) return NextResponse.next();
+  // Launch photo gallery: static HTML in /public/poze (folder URL rewritten in next.config.ts).
+  if (pathname.startsWith("/poze/")) return NextResponse.next();
 
   // Canonical page URLs end with "/" (trailingSlash). APIs are excluded by the matcher.
   // (A plain URL: NextURL would normalise the slash away again.)

@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<base href="/poze/">
+<meta name="robots" content="noindex, nofollow">
+<style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Galeria lansării GiftMe</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@900&family=Poppins:wght@400;500;600&family=Caveat:wght@600&display=swap">
+<style>
+/* Layout: full-bleed hero on the launch backdrop, then a tight 3:2 photo grid, lightbox for single photos */
+:root{
+  --bg:#ffffff; --surface:#f7f1f1; --fg:#111111; --muted:#5d5357; --line:#e7dcde;
+  --red:#e11d2e; --red-text:#c8101f; --on-red:#ffffff;
+  --f-display:"League Spartan","Arial Black",Arial,sans-serif;
+  --f-body:"Poppins",Arial,Helvetica,sans-serif;
+  --f-hand:"Caveat","Segoe Script","Bradley Hand",cursive;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111111; --surface:#1b1718; --fg:#f6f1f1; --muted:#b9adb1; --line:#302829; --red-text:#ff5361; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111111; --surface:#1b1718; --fg:#f6f1f1; --muted:#b9adb1; --line:#302829; --red-text:#ff5361; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:var(--red-text)}
+:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+
+/* hero */
+.hero{position:relative;background:#7a0b14;color:#fff;overflow:hidden}
+.hero>img{position:absolute;inset:-12px;width:calc(100% + 24px);height:calc(100% + 24px);max-width:none;object-fit:cover;object-position:center 40%;filter:blur(5px) saturate(1.1)}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,17,17,.72),rgba(17,17,17,.6) 55%,rgba(17,17,17,.82))}
+.hero .wrap{position:relative;z-index:1;padding-block:clamp(40px,8vw,88px)}
+.brand{display:none}
+.brand b{font-family:var(--f-display);font-weight:900;font-size:30px;letter-spacing:-.5px}
+.brand i{font-family:var(--f-hand);font-style:normal;font-weight:600;font-size:36px;color:#ff4b5a;margin-left:-8px}
+.brand span{font-size:13px;opacity:.85;margin-left:6px}
+h1{font-family:var(--f-display);font-weight:900;font-size:clamp(40px,8.5vw,92px);line-height:.98;letter-spacing:-1.5px;margin:0;max-width:14ch;text-wrap:balance}
+h1 em{font-family:var(--f-hand);font-weight:600;font-style:normal;letter-spacing:0;color:#ff4b5a;font-size:1.18em;display:inline-block;transform:rotate(-3deg)}
+.lead{max-width:52ch;font-size:clamp(16px,2.2vw,19px);margin:22px 0 0;opacity:.95}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px;align-items:center}
+.btn{font:600 15px/1 var(--f-body);display:inline-flex;align-items:center;gap:10px;border:0;border-radius:999px;padding:16px 24px;cursor:pointer;background:var(--red);color:var(--on-red);text-decoration:none}
+.btn:hover{background:#c8101f}
+.btn:disabled{opacity:.7;cursor:progress}
+.btn.ghost{background:rgba(255,255,255,.14);color:#fff;border:1.5px solid rgba(255,255,255,.55)}
+.btn.ghost:hover{background:rgba(255,255,255,.26)}
+.meta{font-size:14px;opacity:.85}
+.progress{margin-top:16px;max-width:420px;height:6px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden}
+.progress[hidden]{display:none}
+.progress>span{display:block;height:100%;width:0;background:#fff;transition:width .2s}
+.note{margin:14px 0 0;font-size:13.5px;max-width:60ch;opacity:.95}
+
+
+/* wow layer: logo sticker, polaroid stack, Gifty, camera */
+.logo-pill{display:inline-flex;background:#fff;border-radius:999px;padding:10px 22px;box-shadow:0 6px 22px rgba(0,0,0,.28);margin-bottom:clamp(26px,5vw,52px)}
+.logo-pill img{display:block;height:34px;width:auto}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:32px;align-items:center}
+.hero h1{max-width:12ch}
+.stack{position:relative;height:clamp(340px,46vw,500px);min-width:0}
+.pol{position:absolute;margin:0;background:#fff;padding:9px 9px 34px;border-radius:4px;box-shadow:0 14px 34px rgba(0,0,0,.45);width:clamp(150px,22vw,250px);transition:transform .3s}
+.pol img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:2px}
+.pol figcaption{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-family:var(--f-hand);font-weight:600;font-size:clamp(16px,2vw,21px);white-space:nowrap;line-height:1;color:#111}
+.pol.p1{left:2%;top:4%;transform:rotate(-7deg)}
+.pol.p2{right:0;top:0;transform:rotate(6deg);z-index:2}
+.pol.p3{right:1%;top:44%;transform:rotate(-2.5deg);z-index:3}
+.pol:hover{transform:rotate(0) scale(1.05);z-index:5}
+.gifty{position:absolute;left:-2%;bottom:-6%;width:clamp(120px,17vw,190px);z-index:4;animation:bob 3.6s ease-in-out infinite;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
+.gifty svg{display:block;width:100%;height:auto;overflow:visible}
+.bubble{position:absolute;left:0;top:52%;max-width:min(210px,52%);z-index:6;background:#fff;color:#111;border-radius:18px 18px 18px 4px;padding:8px 14px;font-family:var(--f-hand);font-weight:600;font-size:clamp(19px,2.4vw,26px);line-height:1.05;box-shadow:0 6px 18px rgba(0,0,0,.3);transform:rotate(-3deg)}
+.cam-sticker{position:absolute;right:42%;bottom:-2%;z-index:6;width:clamp(64px,9vw,96px);height:clamp(64px,9vw,96px);border-radius:50%;background:#e11d2e;display:grid;place-items:center;border:4px solid #fff;box-shadow:0 8px 22px rgba(0,0,0,.4);transform:rotate(8deg)}
+.cam-sticker svg{width:62%;height:62%}
+.cam-sticker::after{content:"";position:absolute;inset:-12px;border-radius:50%;border:3px solid rgba(255,255,255,.7);animation:flash 2.4s ease-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes flash{0%{transform:scale(.8);opacity:.9}70%,100%{transform:scale(1.25);opacity:0}}
+.tw{animation:tw 2.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes tw{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.45);opacity:.5}}
+h2 .cam{display:inline-block;vertical-align:-.12em;width:1em;height:1em;margin-right:.25em}
+.band{background:var(--surface);border-block:1px solid var(--line)}
+.band .wrap{padding-block:clamp(36px,6vw,72px);display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(20px,5vw,64px);align-items:center}
+.band img{display:block;width:100%;max-width:380px;height:auto;margin:0 auto;background:#ffffff;border-radius:20px;padding:14px;box-sizing:border-box;border:1px solid var(--line)}
+.band h2{margin-bottom:14px}
+.band p{margin:0 0 22px;max-width:46ch;color:var(--muted)}
+.band .hand{font-family:var(--f-hand);font-weight:600;font-size:clamp(28px,4vw,40px);line-height:1;color:var(--red-text);margin:0 0 10px}
+.foot-logo{display:inline-flex;background:#fff;border-radius:999px;padding:9px 20px;margin-bottom:14px}
+.foot-logo img{display:block;height:30px;width:auto}
+@media (max-width:860px){
+  .hero-grid{grid-template-columns:1fr}
+  .stack{height:clamp(320px,88vw,420px);margin-top:8px}
+  .pol{width:clamp(130px,38vw,210px)}
+  .band .wrap{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.gifty,.tw,.cam-sticker::after{animation:none!important}}
+
+/* gallery */
+.gal{padding-block:clamp(36px,6vw,72px)}
+.gal-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:8px 24px;margin-bottom:22px}
+h2{font-family:var(--f-display);font-weight:900;font-size:clamp(28px,4.5vw,44px);line-height:1.05;letter-spacing:-.8px;margin:0}
+.gal-head p{margin:0;color:var(--muted);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:10px}
+.card{position:relative;margin:0;aspect-ratio:3/2;background:var(--surface);border-radius:6px;overflow:hidden}
+.card .open{all:unset;display:block;width:100%;height:100%;cursor:zoom-in}
+.card .open:focus-visible{outline:3px solid var(--red);outline-offset:-3px}
+.card img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .35s}
+.card:hover img{transform:scale(1.035)}
+.dl{position:absolute;right:8px;bottom:8px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--red);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.dl:hover{background:#c8101f}
+.num{position:absolute;left:8px;top:8px;font:600 11px/1 var(--f-body);letter-spacing:.08em;color:#fff;background:rgba(17,17,17,.62);padding:5px 7px;border-radius:4px;font-variant-numeric:tabular-nums}
+@media (hover:hover){.dl{opacity:0;transition:opacity .2s}.card:hover .dl,.dl:focus-visible{opacity:1}}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:50;background:rgba(10,8,8,.94);display:grid;grid-template-rows:auto 1fr;color:#fff}
+.lb[hidden]{display:none}
+.lb-bar{display:flex;align-items:center;gap:10px;padding:max(10px,env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px))}
+.lb-count{font:600 14px var(--f-body);font-variant-numeric:tabular-nums;margin-right:auto;opacity:.9}
+.lb .btn{padding:11px 18px;font-size:14px}
+.icon{all:unset;box-sizing:border-box;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:rgba(255,255,255,.12);color:#fff}
+.icon:hover{background:rgba(255,255,255,.24)}
+.icon:focus-visible{outline:3px solid #fff}
+.lb-stage{position:relative;min-height:0;display:grid;place-items:center;padding:0 max(14px,env(safe-area-inset-right,0px)) max(14px,env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));touch-action:pan-y}
+.lb-stage img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;user-select:none}
+.nav{position:absolute;top:50%;transform:translateY(-50%)}
+.nav.prev{left:max(10px,env(safe-area-inset-left,0px))}
+.nav.next{right:max(10px,env(safe-area-inset-right,0px))}
+
+/* footer */
+footer{background:var(--red);color:#fff}
+footer .wrap{padding-block:40px;display:flex;flex-wrap:wrap;gap:20px 48px;justify-content:space-between;align-items:end}
+.slogan{font-family:var(--f-hand);font-weight:600;font-size:clamp(34px,6vw,52px);line-height:1;margin:0}
+.contact{font-size:14.5px;line-height:1.8}
+.contact a{color:#fff}
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:#111;color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;max-width:calc(100% - 32px);box-shadow:0 6px 24px rgba(0,0,0,.4)}
+.toast[hidden]{display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="cam" viewBox="0 0 64 64"><path d="M10 20h11l4-6h14l4 6h11a4 4 0 0 1 4 4v26a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V24a4 4 0 0 1 4-4z" fill="#111"/><circle cx="32" cy="37" r="12" fill="#fff"/><circle cx="32" cy="37" r="7.5" fill="#e11d2e"/><circle cx="29" cy="34" r="2.2" fill="#fff"/><rect x="12" y="24" width="7" height="4" rx="2" fill="#fff"/></symbol></defs></svg>
+<header class="hero">
+  <img src="assets/hero-bg.jpg" alt="" width="2000" height="1333">
+  <div class="wrap">
+    <div class="logo-pill"><img src="assets/logo.png" alt="GiftMe!" width="732" height="222"></div>
+    <div class="hero-grid">
+      <div>
+        <h1>Ne-am lansat, iar voi ați fost acolo. <em>Mulțumim!</em></h1>
+        <p class="lead">Aici sunt toate pozele de la lansarea GiftMe. Le poți răsfoi, le poți descărca pe cele preferate sau le poți lua pe toate odată.</p>
+        <div class="actions">
+          <button class="btn zipBtn" type="button" hidden>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="zipLabel">Descarcă toate pozele (59)</span>
+          </button>
+          <a class="btn ghost" href="#galerie">Vezi galeria</a>
+        </div>
+        <p class="meta" style="margin:14px 0 0">59 fotografii · JPG, 2400 px</p>
+        <div class="progress" id="prog" hidden><span id="progBar"></span></div>
+        <p class="note" id="noDl" hidden>Descărcarea directă nu este disponibilă în acest browser. Deschide o fotografie și salveaz-o din meniul browserului (pe telefon, ține apăsat pe poză).</p>
+      </div>
+      <div class="stack" aria-hidden="false">
+        <figure class="pol p1"><img src="thumbs/giftme-lansare-10.jpg" alt="Grup de invitați zâmbind la lansare"><figcaption>gândit pentru tine</figcaption></figure>
+        <figure class="pol p2"><img src="thumbs/giftme-lansare-12.jpg" alt="Invitate cu baloane de text la lansare"><figcaption>zâmbete</figcaption></figure>
+        <figure class="pol p3"><img src="thumbs/giftme-lansare-36.jpg" alt="Invitați lângă cutia mare cu fundă"><figcaption>mascota Gifty</figcaption></figure>
+        <div class="bubble">Zâmbiți! Ați ieșit super în poze.</div>
+        <div class="gifty"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 440" role="img" aria-label="Gifty, mascota GiftMe">
+      <path class="tw" d="M300 128 l7 15 l15 7 l-15 7 l-7 15 l-7 -15 l-15 -7 l15 -7 z" fill="#e11d2e"/>
+      <path class="tw" style="animation-delay:.7s" d="M52 108 l5 11 l11 5 l-11 5 l-5 11 l-5 -11 l-11 -5 l11 -5 z" fill="#111111"/>
+      <path class="tw" style="animation-delay:1.3s" d="M322 330 l4 9 l9 4 l-9 4 l-4 9 l-4 -9 l-9 -4 l9 -4 z" fill="#111111"/>
+      <g transform="rotate(-6 180 250)">
+        <ellipse cx="180" cy="400" rx="106" ry="12" fill="#111111" opacity="0.18"/>
+        <rect x="124" y="352" width="30" height="34" rx="12" fill="#111111"/>
+        <rect x="206" y="352" width="30" height="34" rx="12" fill="#111111"/>
+        <path d="M180 170 C128 140 136 94 164 102 C174 105 180 113 180 120 C180 113 186 105 196 102 C224 94 232 140 180 170 Z" fill="#e11d2e" stroke="#111111" stroke-width="7" stroke-linejoin="round"/>
+        <rect x="70" y="164" width="220" height="196" rx="28" fill="#ffffff" stroke="#111111" stroke-width="7"/>
+        <rect x="70" y="164" width="220" height="52" rx="26" fill="#e11d2e" stroke="#111111" stroke-width="7"/>
+        <circle cx="136" cy="268" r="13" fill="#111111"/>
+        <path d="M212 270 Q230 254 248 270" fill="none" stroke="#111111" stroke-width="7" stroke-linecap="round"/>
+        <path d="M156 304 Q180 330 204 304" fill="none" stroke="#111111" stroke-width="7" stroke-linecap="round"/>
+        <circle cx="104" cy="300" r="13" fill="#e11d2e" opacity="0.35"/>
+        <circle cx="256" cy="300" r="13" fill="#e11d2e" opacity="0.35"/>
+      </g>
+    </svg></div>
+        <div class="cam-sticker"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#cam"/></svg></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="gal" id="galerie">
+  <div class="wrap">
+    <div class="gal-head">
+      <h2><svg class="cam" viewBox="0 0 64 64" aria-hidden="true"><use href="#cam"/></svg>Pozele din ziua lansării</h2>
+      <p>Apasă pe o poză pentru a o mări. Butonul roșu o descarcă.</p>
+    </div>
+    <div class="grid" id="grid">
+<figure class="card" data-i="0"><button class="open" type="button" aria-label="Deschide fotografia 1"><img src="thumbs/giftme-lansare-01.jpg" alt="Fotografie nr. 1 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-01.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-01.jpg" aria-label="Descarcă fotografia 1" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">01</span></figure>
+<figure class="card" data-i="1"><button class="open" type="button" aria-label="Deschide fotografia 2"><img src="thumbs/giftme-lansare-02.jpg" alt="Fotografie nr. 2 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-02.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-02.jpg" aria-label="Descarcă fotografia 2" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">02</span></figure>
+<figure class="card" data-i="2"><button class="open" type="button" aria-label="Deschide fotografia 3"><img src="thumbs/giftme-lansare-03.jpg" alt="Fotografie nr. 3 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-03.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-03.jpg" aria-label="Descarcă fotografia 3" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">03</span></figure>
+<figure class="card" data-i="3"><button class="open" type="button" aria-label="Deschide fotografia 4"><img src="thumbs/giftme-lansare-04.jpg" alt="Fotografie nr. 4 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-04.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-04.jpg" aria-label="Descarcă fotografia 4" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">04</span></figure>
+<figure class="card" data-i="4"><button class="open" type="button" aria-label="Deschide fotografia 5"><img src="thumbs/giftme-lansare-05.jpg" alt="Fotografie nr. 5 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-05.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-05.jpg" aria-label="Descarcă fotografia 5" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">05</span></figure>
+<figure class="card" data-i="5"><button class="open" type="button" aria-label="Deschide fotografia 6"><img src="thumbs/giftme-lansare-06.jpg" alt="Fotografie nr. 6 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-06.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-06.jpg" aria-label="Descarcă fotografia 6" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">06</span></figure>
+<figure class="card" data-i="6"><button class="open" type="button" aria-label="Deschide fotografia 7"><img src="thumbs/giftme-lansare-07.jpg" alt="Fotografie nr. 7 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-07.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-07.jpg" aria-label="Descarcă fotografia 7" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">07</span></figure>
+<figure class="card" data-i="7"><button class="open" type="button" aria-label="Deschide fotografia 8"><img src="thumbs/giftme-lansare-08.jpg" alt="Fotografie nr. 8 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-08.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-08.jpg" aria-label="Descarcă fotografia 8" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">08</span></figure>
+<figure class="card" data-i="8"><button class="open" type="button" aria-label="Deschide fotografia 9"><img src="thumbs/giftme-lansare-09.jpg" alt="Fotografie nr. 9 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-09.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-09.jpg" aria-label="Descarcă fotografia 9" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">09</span></figure>
+<figure class="card" data-i="9"><button class="open" type="button" aria-label="Deschide fotografia 10"><img src="thumbs/giftme-lansare-10.jpg" alt="Fotografie nr. 10 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-10.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-10.jpg" aria-label="Descarcă fotografia 10" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">10</span></figure>
+<figure class="card" data-i="10"><button class="open" type="button" aria-label="Deschide fotografia 11"><img src="thumbs/giftme-lansare-11.jpg" alt="Fotografie nr. 11 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-11.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-11.jpg" aria-label="Descarcă fotografia 11" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">11</span></figure>
+<figure class="card" data-i="11"><button class="open" type="button" aria-label="Deschide fotografia 12"><img src="thumbs/giftme-lansare-12.jpg" alt="Fotografie nr. 12 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-12.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-12.jpg" aria-label="Descarcă fotografia 12" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">12</span></figure>
+<figure class="card" data-i="12"><button class="open" type="button" aria-label="Deschide fotografia 13"><img src="thumbs/giftme-lansare-13.jpg" alt="Fotografie nr. 13 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-13.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-13.jpg" aria-label="Descarcă fotografia 13" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">13</span></figure>
+<figure class="card" data-i="13"><button class="open" type="button" aria-label="Deschide fotografia 14"><img src="thumbs/giftme-lansare-14.jpg" alt="Fotografie nr. 14 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-14.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-14.jpg" aria-label="Descarcă fotografia 14" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">14</span></figure>
+<figure class="card" data-i="14"><button class="open" type="button" aria-label="Deschide fotografia 15"><img src="thumbs/giftme-lansare-15.jpg" alt="Fotografie nr. 15 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-15.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-15.jpg" aria-label="Descarcă fotografia 15" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">15</span></figure>
+<figure class="card" data-i="15"><button class="open" type="button" aria-label="Deschide fotografia 16"><img src="thumbs/giftme-lansare-16.jpg" alt="Fotografie nr. 16 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-16.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-16.jpg" aria-label="Descarcă fotografia 16" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">16</span></figure>
+<figure class="card" data-i="16"><button class="open" type="button" aria-label="Deschide fotografia 17"><img src="thumbs/giftme-lansare-17.jpg" alt="Fotografie nr. 17 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-17.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-17.jpg" aria-label="Descarcă fotografia 17" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">17</span></figure>
+<figure class="card" data-i="17"><button class="open" type="button" aria-label="Deschide fotografia 18"><img src="thumbs/giftme-lansare-18.jpg" alt="Fotografie nr. 18 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-18.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-18.jpg" aria-label="Descarcă fotografia 18" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">18</span></figure>
+<figure class="card" data-i="18"><button class="open" type="button" aria-label="Deschide fotografia 19"><img src="thumbs/giftme-lansare-19.jpg" alt="Fotografie nr. 19 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-19.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-19.jpg" aria-label="Descarcă fotografia 19" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">19</span></figure>
+<figure class="card" data-i="19"><button class="open" type="button" aria-label="Deschide fotografia 20"><img src="thumbs/giftme-lansare-20.jpg" alt="Fotografie nr. 20 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-20.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-20.jpg" aria-label="Descarcă fotografia 20" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">20</span></figure>
+<figure class="card" data-i="20"><button class="open" type="button" aria-label="Deschide fotografia 21"><img src="thumbs/giftme-lansare-21.jpg" alt="Fotografie nr. 21 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-21.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-21.jpg" aria-label="Descarcă fotografia 21" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">21</span></figure>
+<figure class="card" data-i="21"><button class="open" type="button" aria-label="Deschide fotografia 22"><img src="thumbs/giftme-lansare-22.jpg" alt="Fotografie nr. 22 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-22.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-22.jpg" aria-label="Descarcă fotografia 22" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">22</span></figure>
+<figure class="card" data-i="22"><button class="open" type="button" aria-label="Deschide fotografia 23"><img src="thumbs/giftme-lansare-23.jpg" alt="Fotografie nr. 23 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-23.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-23.jpg" aria-label="Descarcă fotografia 23" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">23</span></figure>
+<figure class="card" data-i="23"><button class="open" type="button" aria-label="Deschide fotografia 24"><img src="thumbs/giftme-lansare-24.jpg" alt="Fotografie nr. 24 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-24.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-24.jpg" aria-label="Descarcă fotografia 24" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">24</span></figure>
+<figure class="card" data-i="24"><button class="open" type="button" aria-label="Deschide fotografia 25"><img src="thumbs/giftme-lansare-25.jpg" alt="Fotografie nr. 25 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-25.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-25.jpg" aria-label="Descarcă fotografia 25" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">25</span></figure>
+<figure class="card" data-i="25"><button class="open" type="button" aria-label="Deschide fotografia 26"><img src="thumbs/giftme-lansare-26.jpg" alt="Fotografie nr. 26 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-26.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-26.jpg" aria-label="Descarcă fotografia 26" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">26</span></figure>
+<figure class="card" data-i="26"><button class="open" type="button" aria-label="Deschide fotografia 27"><img src="thumbs/giftme-lansare-27.jpg" alt="Fotografie nr. 27 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-27.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-27.jpg" aria-label="Descarcă fotografia 27" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">27</span></figure>
+<figure class="card" data-i="27"><button class="open" type="button" aria-label="Deschide fotografia 28"><img src="thumbs/giftme-lansare-28.jpg" alt="Fotografie nr. 28 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-28.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-28.jpg" aria-label="Descarcă fotografia 28" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">28</span></figure>
+<figure class="card" data-i="28"><button class="open" type="button" aria-label="Deschide fotografia 29"><img src="thumbs/giftme-lansare-29.jpg" alt="Fotografie nr. 29 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-29.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-29.jpg" aria-label="Descarcă fotografia 29" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">29</span></figure>
+<figure class="card" data-i="29"><button class="open" type="button" aria-label="Deschide fotografia 30"><img src="thumbs/giftme-lansare-30.jpg" alt="Fotografie nr. 30 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-30.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-30.jpg" aria-label="Descarcă fotografia 30" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">30</span></figure>
+<figure class="card" data-i="30"><button class="open" type="button" aria-label="Deschide fotografia 31"><img src="thumbs/giftme-lansare-31.jpg" alt="Fotografie nr. 31 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-31.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-31.jpg" aria-label="Descarcă fotografia 31" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">31</span></figure>
+<figure class="card" data-i="31"><button class="open" type="button" aria-label="Deschide fotografia 32"><img src="thumbs/giftme-lansare-32.jpg" alt="Fotografie nr. 32 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-32.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-32.jpg" aria-label="Descarcă fotografia 32" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">32</span></figure>
+<figure class="card" data-i="32"><button class="open" type="button" aria-label="Deschide fotografia 33"><img src="thumbs/giftme-lansare-33.jpg" alt="Fotografie nr. 33 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-33.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-33.jpg" aria-label="Descarcă fotografia 33" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">33</span></figure>
+<figure class="card" data-i="33"><button class="open" type="button" aria-label="Deschide fotografia 34"><img src="thumbs/giftme-lansare-34.jpg" alt="Fotografie nr. 34 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-34.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-34.jpg" aria-label="Descarcă fotografia 34" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">34</span></figure>
+<figure class="card" data-i="34"><button class="open" type="button" aria-label="Deschide fotografia 35"><img src="thumbs/giftme-lansare-35.jpg" alt="Fotografie nr. 35 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-35.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-35.jpg" aria-label="Descarcă fotografia 35" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">35</span></figure>
+<figure class="card" data-i="35"><button class="open" type="button" aria-label="Deschide fotografia 36"><img src="thumbs/giftme-lansare-36.jpg" alt="Fotografie nr. 36 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-36.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-36.jpg" aria-label="Descarcă fotografia 36" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">36</span></figure>
+<figure class="card" data-i="36"><button class="open" type="button" aria-label="Deschide fotografia 37"><img src="thumbs/giftme-lansare-37.jpg" alt="Fotografie nr. 37 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-37.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-37.jpg" aria-label="Descarcă fotografia 37" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">37</span></figure>
+<figure class="card" data-i="37"><button class="open" type="button" aria-label="Deschide fotografia 38"><img src="thumbs/giftme-lansare-38.jpg" alt="Fotografie nr. 38 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-38.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-38.jpg" aria-label="Descarcă fotografia 38" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">38</span></figure>
+<figure class="card" data-i="38"><button class="open" type="button" aria-label="Deschide fotografia 39"><img src="thumbs/giftme-lansare-39.jpg" alt="Fotografie nr. 39 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-39.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-39.jpg" aria-label="Descarcă fotografia 39" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">39</span></figure>
+<figure class="card" data-i="39"><button class="open" type="button" aria-label="Deschide fotografia 40"><img src="thumbs/giftme-lansare-40.jpg" alt="Fotografie nr. 40 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-40.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-40.jpg" aria-label="Descarcă fotografia 40" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">40</span></figure>
+<figure class="card" data-i="40"><button class="open" type="button" aria-label="Deschide fotografia 41"><img src="thumbs/giftme-lansare-41.jpg" alt="Fotografie nr. 41 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-41.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-41.jpg" aria-label="Descarcă fotografia 41" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">41</span></figure>
+<figure class="card" data-i="41"><button class="open" type="button" aria-label="Deschide fotografia 42"><img src="thumbs/giftme-lansare-42.jpg" alt="Fotografie nr. 42 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-42.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-42.jpg" aria-label="Descarcă fotografia 42" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">42</span></figure>
+<figure class="card" data-i="42"><button class="open" type="button" aria-label="Deschide fotografia 43"><img src="thumbs/giftme-lansare-43.jpg" alt="Fotografie nr. 43 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-43.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-43.jpg" aria-label="Descarcă fotografia 43" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">43</span></figure>
+<figure class="card" data-i="43"><button class="open" type="button" aria-label="Deschide fotografia 44"><img src="thumbs/giftme-lansare-44.jpg" alt="Fotografie nr. 44 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-44.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-44.jpg" aria-label="Descarcă fotografia 44" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">44</span></figure>
+<figure class="card" data-i="44"><button class="open" type="button" aria-label="Deschide fotografia 45"><img src="thumbs/giftme-lansare-45.jpg" alt="Fotografie nr. 45 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-45.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-45.jpg" aria-label="Descarcă fotografia 45" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">45</span></figure>
+<figure class="card" data-i="45"><button class="open" type="button" aria-label="Deschide fotografia 46"><img src="thumbs/giftme-lansare-46.jpg" alt="Fotografie nr. 46 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-46.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-46.jpg" aria-label="Descarcă fotografia 46" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">46</span></figure>
+<figure class="card" data-i="46"><button class="open" type="button" aria-label="Deschide fotografia 47"><img src="thumbs/giftme-lansare-47.jpg" alt="Fotografie nr. 47 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-47.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-47.jpg" aria-label="Descarcă fotografia 47" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">47</span></figure>
+<figure class="card" data-i="47"><button class="open" type="button" aria-label="Deschide fotografia 48"><img src="thumbs/giftme-lansare-48.jpg" alt="Fotografie nr. 48 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-48.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-48.jpg" aria-label="Descarcă fotografia 48" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">48</span></figure>
+<figure class="card" data-i="48"><button class="open" type="button" aria-label="Deschide fotografia 49"><img src="thumbs/giftme-lansare-49.jpg" alt="Fotografie nr. 49 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-49.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-49.jpg" aria-label="Descarcă fotografia 49" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">49</span></figure>
+<figure class="card" data-i="49"><button class="open" type="button" aria-label="Deschide fotografia 50"><img src="thumbs/giftme-lansare-50.jpg" alt="Fotografie nr. 50 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-50.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-50.jpg" aria-label="Descarcă fotografia 50" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">50</span></figure>
+<figure class="card" data-i="50"><button class="open" type="button" aria-label="Deschide fotografia 51"><img src="thumbs/giftme-lansare-51.jpg" alt="Fotografie nr. 51 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-51.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-51.jpg" aria-label="Descarcă fotografia 51" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">51</span></figure>
+<figure class="card" data-i="51"><button class="open" type="button" aria-label="Deschide fotografia 52"><img src="thumbs/giftme-lansare-52.jpg" alt="Fotografie nr. 52 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-52.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-52.jpg" aria-label="Descarcă fotografia 52" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">52</span></figure>
+<figure class="card" data-i="52"><button class="open" type="button" aria-label="Deschide fotografia 53"><img src="thumbs/giftme-lansare-53.jpg" alt="Fotografie nr. 53 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-53.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-53.jpg" aria-label="Descarcă fotografia 53" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">53</span></figure>
+<figure class="card" data-i="53"><button class="open" type="button" aria-label="Deschide fotografia 54"><img src="thumbs/giftme-lansare-54.jpg" alt="Fotografie nr. 54 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-54.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-54.jpg" aria-label="Descarcă fotografia 54" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">54</span></figure>
+<figure class="card" data-i="54"><button class="open" type="button" aria-label="Deschide fotografia 55"><img src="thumbs/giftme-lansare-55.jpg" alt="Fotografie nr. 55 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-55.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-55.jpg" aria-label="Descarcă fotografia 55" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">55</span></figure>
+<figure class="card" data-i="55"><button class="open" type="button" aria-label="Deschide fotografia 56"><img src="thumbs/giftme-lansare-56.jpg" alt="Fotografie nr. 56 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-56.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-56.jpg" aria-label="Descarcă fotografia 56" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">56</span></figure>
+<figure class="card" data-i="56"><button class="open" type="button" aria-label="Deschide fotografia 57"><img src="thumbs/giftme-lansare-57.jpg" alt="Fotografie nr. 57 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-57.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-57.jpg" aria-label="Descarcă fotografia 57" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">57</span></figure>
+<figure class="card" data-i="57"><button class="open" type="button" aria-label="Deschide fotografia 58"><img src="thumbs/giftme-lansare-58.jpg" alt="Fotografie nr. 58 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-58.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-58.jpg" aria-label="Descarcă fotografia 58" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">58</span></figure>
+<figure class="card" data-i="58"><button class="open" type="button" aria-label="Deschide fotografia 59"><img src="thumbs/giftme-lansare-59.jpg" alt="Fotografie nr. 59 de la lansarea GiftMe" loading="lazy" width="640" height="427"></button><a class="dl" href="photos/giftme-lansare-59.jpg" target="_blank" rel="noopener" data-file="giftme-lansare-59.jpg" aria-label="Descarcă fotografia 59" title="Descarcă"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a><span class="num">59</span></figure>
+    </div>
+  </div>
+</main>
+
+<section class="band">
+  <div class="wrap">
+    <img src="assets/omuleti.png" alt="Doi omuleți desenați: unul dăruiește o inimă celuilalt" width="404" height="389" loading="lazy">
+    <div>
+      <p class="hand">Gândit pentru tine</p>
+      <h2>Un cadou ales cu inima</h2>
+      <p>La GiftMe, fiecare cutie este făcută pentru omul care o primește. Vă mulțumim că ați fost parte din prima zi. Pozele sunt ale voastre, luați-le acasă.</p>
+      <button class="btn zipBtn" type="button" hidden>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="zipLabel">Descarcă toate pozele (59)</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><div class="foot-logo"><img src="assets/logo.png" alt="GiftMe!" width="732" height="222"></div><p class="slogan">Gândit pentru tine</p></div>
+    <div class="contact">
+      <strong>FE „GiftMe” SRL</strong><br>
+      fe.giftme@gmail.com · 068 951 000<br>
+      <a href="https://giftme.site" target="_blank" rel="noopener">giftme.site</a><br>
+      Str. Miron Costin 26/2, cab. 225, Chișinău
+    </div>
+  </div>
+</footer>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Fotografie" hidden>
+  <div class="lb-bar">
+    <span class="lb-count" id="lbCount">01 / 59</span>
+    <a class="btn" id="lbDl" href="#" target="_blank" rel="noopener">Descarcă</a>
+    <button class="icon" id="lbClose" type="button" aria-label="Închide"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="lb-stage" id="stage">
+    <button class="icon nav prev" id="prev" type="button" aria-label="Poza anterioară"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <img id="lbImg" alt="">
+    <button class="icon nav next" id="next" type="button" aria-label="Poza următoare"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="assets/jszip.min.js"></script>
+<script>
+(function(){
+  var N=59, dl=null, cur=0;
+  var $=function(id){return document.getElementById(id)};
+  var name=function(i){return "giftme-lansare-"+String(i+1).padStart(2,"0")+".jpg"};
+  var toastT;
+  function toast(m){var t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},3800)}
+
+  function saveErr(e){
+    var c=e&&e.code;
+    if(c==="declined")return;
+    if(c==="rate_limited")toast("Așteaptă o clipă și încearcă din nou.");
+    else toast("Descărcarea nu a reușit. Deschide poza și salveaz-o din browser.");
+  }
+  function saveOne(file){
+    return fetch("photos/"+file).then(function(r){if(!r.ok)throw new Error("fetch");return r.blob()})
+      .then(function(b){return dl.save({filename:file,data:b})})
+      .then(function(){toast("Poza a fost salvată.")})
+      .catch(saveErr);
+  }
+  // per-card download buttons: use the save flow when available, otherwise the link opens the photo in a new tab
+  document.addEventListener("click",function(e){
+    var a=e.target.closest&&e.target.closest("a.dl,#lbDl");
+    if(a&&dl){e.preventDefault();saveOne(a.dataset.file)}
+  });
+
+  // lightbox
+  var lb=$("lb"),img=$("lbImg"),lastFocus=null;
+  function show(i){
+    cur=(i+N)%N;
+    img.src="photos/"+name(cur).replace(".jpg","")+".jpg";
+    img.alt="Fotografie nr. "+(cur+1)+" de la lansarea GiftMe";
+    $("lbCount").textContent=String(cur+1).padStart(2,"0")+" / "+N;
+    var a=$("lbDl");a.href="photos/"+name(cur);a.dataset.file=name(cur);
+    [cur+1,cur-1].forEach(function(j){var p=new Image();p.src="photos/"+name((j+N)%N)});
+  }
+  function openLb(i){lastFocus=document.activeElement;lb.hidden=false;document.body.style.overflow="hidden";show(i);$("lbClose").focus()}
+  function closeLb(){lb.hidden=true;document.body.style.overflow="";if(lastFocus&&lastFocus.focus)lastFocus.focus()}
+  $("grid").addEventListener("click",function(e){var c=e.target.closest(".open");if(c)openLb(+c.parentNode.dataset.i)});
+  $("lbClose").addEventListener("click",closeLb);
+  $("prev").addEventListener("click",function(){show(cur-1)});
+  $("next").addEventListener("click",function(){show(cur+1)});
+  document.addEventListener("keydown",function(e){
+    if(lb.hidden)return;
+    if(e.key==="Escape")closeLb();
+    else if(e.key==="ArrowLeft")show(cur-1);
+    else if(e.key==="ArrowRight")show(cur+1);
+  });
+  var sx=null;
+  $("stage").addEventListener("touchstart",function(e){sx=e.touches[0].clientX},{passive:true});
+  $("stage").addEventListener("touchend",function(e){
+    if(sx===null)return;var d=e.changedTouches[0].clientX-sx;sx=null;
+    if(Math.abs(d)>50)show(cur+(d<0?1:-1));
+  },{passive:true});
+
+  // download everything as one zip
+  function zipAll(){
+    var btns=document.querySelectorAll(".zipBtn"),labs=document.querySelectorAll(".zipLabel"),prog=$("prog"),bar=$("progBar");function setLab(s){labs.forEach(function(l){l.textContent=s})}function setBusy(b){btns.forEach(function(x){x.disabled=b})}
+    if(typeof JSZip==="undefined"){toast("Arhiva nu poate fi creată acum. Descarcă pozele pe rând.");return}
+    setBusy(true);prog.hidden=false;bar.style.width="0";
+    var zip=new JSZip(),done=0;
+    var jobs=[];for(var i=0;i<N;i++)jobs.push(i);
+    function worker(){
+      if(!jobs.length)return Promise.resolve();
+      var i=jobs.shift();
+      return fetch("photos/"+name(i)).then(function(r){if(!r.ok)throw new Error("fetch");return r.arrayBuffer()}).then(function(buf){
+        zip.file(name(i),buf,{binary:true});done++;
+        setLab("Se pregătesc pozele… "+done+" / "+N);
+        bar.style.width=(done/N*90)+"%";
+      }).then(worker);
+    }
+    Promise.all([worker(),worker(),worker(),worker()])
+      .then(function(){setLab("Se creează arhiva…");return zip.generateAsync({type:"blob",compression:"STORE"},function(m){bar.style.width=(90+m.percent/10)+"%"})})
+      .then(function(blob){return dl.save({filename:"GiftMe-lansare-poze.zip",data:blob})})
+      .then(function(){toast("Arhiva a fost salvată.")})
+      .catch(saveErr)
+      .then(function(){setBusy(false);setLab("Descarcă toate pozele ("+N+")");prog.hidden=true});
+  }
+  document.querySelectorAll(".zipBtn").forEach(function(b){b.addEventListener("click",zipAll)});
+
+  // standalone: browser download via blob link
+  dl={save:function(o){return new Promise(function(res){var a=document.createElement("a");var url=URL.createObjectURL(o.data);a.href=url;a.download=o.filename;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(url);a.remove()},4000);res({status:"saved"})})}};
+  document.querySelectorAll(".zipBtn").forEach(function(b){b.hidden=false});
+})();
+</script>
+
+</body>
+</html>

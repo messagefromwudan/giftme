@@ -86,6 +86,8 @@ const nextConfig: NextConfig = {
     return {
       beforeFiles: [
         { source: "/confirma-prezenta/", destination: "/confirma-prezenta/index.html" },
+        // Launch photo gallery: plain static HTML in /public/poze.
+        { source: "/poze/", destination: "/poze/index.html" },
         { source: "/confirma-prezenta/intrare/", destination: "/confirma-prezenta/intrare/index.html" },
         // Agent discovery documents.
         { source: "/.well-known/ai-plugin.json", destination: "/api/well-known/ai-plugin" },
